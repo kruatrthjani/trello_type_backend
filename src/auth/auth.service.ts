@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import {  BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { RegisterDto } from "./dto/auth.dto";
 @Injectable()
 export class AuthService{
@@ -6,9 +6,14 @@ export class AuthService{
         return "ok"
     }
 
-    register({id,password}:RegisterDto){
-        console.log("id=",id);
-        console.log("password=",password)
-        return;
+    register({email,password}:RegisterDto){
+        console.log("email=",email)
+        console.log("password",password)
+        if(!email || ! password){
+            throw new BadRequestException(`${(!email &&!password)?'email & password are':!email?'email is':'passwword'} not provemailed`)
+        }
+
+        
+        return "ok";
     }
 }
