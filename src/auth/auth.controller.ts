@@ -1,18 +1,38 @@
-import { Controller,Get, HttpCode, Post ,Body, HttpStatus} from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { RegisterDto } from "./dto/auth.dto";
-@Controller('auth')
-export class AuthController{
-    constructor(private readonly authService:AuthService){}
-    
-    @Get()
-    getAuth():string{
-        return this.authService.hello()
-    } 
+import {
+  Controller,
+  Post,
+  Body,
+  Headers,
+  Get,
+} from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthDto } from './dto/auth.dto';
 
-    
-    @Post()
-    Register(@Body() registerDto:RegisterDto){
-        return this.authService.register(registerDto)
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Get()
+  health() {
+    return 'ok';
+  }
+
+  @Post()
+  authenticate(@Body() dto: AuthDto) {
+    if (dto.provider) {
+      return this.authService.socialLogin(dto);
     }
+
+    if (dto.mode === 'register') {
+      return this.authService.register(dto);
+    }
+
+    return this.authService.login(dto);
+  }
+
+  @Post('refresh')
+  refresh(@Headers('authorization') authHeader: string) {
+    const refreshToken = authHeader?.replace('Bearer ', '');
+    return this.authService.refreshAccessToken(refreshToken);
+  }
 }
