@@ -19,3 +19,20 @@ model User {
 
   @@unique([provider, providerId])
 }
+
+model Projects {
+  projectId         String      @id @default(uuid())
+  projectName       String
+  category          String?
+  projectOrigin     String
+  clientName        String?
+  createdAt         DateTime    @default(now())
+  estimatedDuration String
+  projectManager    String
+  projectType       ProjectType
+}
+
+enum ProjectType {
+  client
+  inhouse
+}

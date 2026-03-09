@@ -41,7 +41,7 @@ export class AuthDto {
     /^(?=(?:.*[a-z]){2,})(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%^&*()]).+$/,
     { message: 'Weak password format' },
   )
-  passwordStrength?: string;
+  retypepassword?: string;
 
   /* ---------------- SOCIAL ONLY ---------------- */
 
