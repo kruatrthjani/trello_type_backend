@@ -30,6 +30,8 @@ model Projects {
   estimatedDuration String
   projectManager    String
   projectType       ProjectType
+
+  @@unique([projectName, clientName])
 }
 
 enum ProjectType {
