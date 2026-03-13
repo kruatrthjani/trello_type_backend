@@ -34,6 +34,13 @@ model Projects {
   @@unique([projectName, clientName])
 }
 
+model Boards{
+  boardId           String     @id @default(uuid())
+  boardName         String
+  boardAssigner     String
+  boardDescription   String?
+}
+
 enum ProjectType {
   client
   inhouse
