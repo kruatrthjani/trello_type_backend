@@ -11,8 +11,25 @@ type Board {
 
 type Query {
   hello: String!
+  getAllBoard: [Board!]!
+  getBoard(id: String!): Board!
 }
 
 type Mutation {
-  createBoard(name: String!, assigner: String!, description: String!): Board!
+  createBoard(data: CreateBoardInput!): Board!
+  updateBoard(data: UpdateBoardInput!): Board!
+  deleteBoard(id: String!): Board!
+}
+
+input CreateBoardInput {
+  name: String!
+  assigner: String!
+  description: String!
+}
+
+input UpdateBoardInput {
+  id: String!
+  name: String
+  assigner: String
+  description: String
 }
