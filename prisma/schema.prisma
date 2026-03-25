@@ -15,33 +15,92 @@ model User {
   name       String?
   provider   String?
   providerId String?
+  userType   Usertype @default(internal)
   createdAt  DateTime @default(now())
+
+  // 🔹 Projects where user is CLIENT
+  clientProjects Projects[] @relation("ClientProjects")
+
+  // 🔹 Projects where user is MANAGER
+  managedProjects Projects[] @relation("ProjectManager")
+
+  // ✅ Correct relation
+  boardMemberships BoardMember[]
 
   @@unique([provider, providerId])
 }
 
 model Projects {
-  projectId         String      @id @default(uuid())
-  projectName       String
-  category          String?
-  projectOrigin     String
-  clientName        String?
-  createdAt         DateTime    @default(now())
+  projectId   String   @id @default(uuid())
+  projectName String
+  category    String?
+  projectOrigin String
+
+  clientId String?
+  client   User? @relation(
+    "ClientProjects",
+    fields: [clientId],
+    references: [id],
+    onDelete: SetNull
+  )
+
+  projectManagerId String
+  projectManager   User @relation(
+    "ProjectManager",
+    fields: [projectManagerId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  createdAt         DateTime @default(now())
   estimatedDuration String
-  projectManager    String
-  projectType       ProjectType
 
-  @@unique([projectName, clientName])
+  boards Boards[]
+
+  @@unique([projectName, clientId])
 }
 
-model Boards{
-  boardId           String     @id @default(uuid())
-  boardName         String
-  boardAssigner     String
-  boardDescription   String?
+model Boards {
+  boardId          String   @id @default(uuid())
+  boardName        String
+  boardDescription String?
+
+  projectId String
+  project   Projects @relation(
+    fields: [projectId],
+    references: [projectId],
+    onDelete: Cascade
+  )
+
+  // ✅ Connect to BoardMember
+  members BoardMember[]
 }
 
-enum ProjectType {
+model BoardMember {
+  boardMemberId String @id @default(uuid())
+
+  userId  String
+  boardId String
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board Boards @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
+
+  // ✅ Permissions (clean naming)
+  canCreate  Boolean @default(false)
+  canEdit    Boolean @default(false)
+  canView    Boolean @default(true)
+  canComment Boolean @default(false)
+  canDelete  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, boardId])
+}
+
+enum Usertype {
   client
-  inhouse
+  developer
+  designer
+  qa
+  internal
 }

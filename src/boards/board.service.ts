@@ -67,8 +67,6 @@ export class boardService {
     });
   }
 
-
-
   async deleteBoard(id:string){
   
     const data=await this.prismaservice.boards.findUnique({where: {
