@@ -16,9 +16,11 @@ export class BoardResolver {
   @Mutation(() => Board)
   async createBoard(
     @Args('data') data: CreateBoardInput,
+    @Args('projectId') projectId: string,
   ) {
     return this.BoardService.createBoard(
-      data
+      data,
+      projectId
     );
   }
 

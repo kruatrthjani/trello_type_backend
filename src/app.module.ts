@@ -10,6 +10,8 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProjectModule } from './projects/projects.module';
 import BoardModule from './boards/board.module';
+import BoardMemberModule from './BoardMember/BoardMember.module';
+
 
 @Module({
   imports: [
@@ -25,6 +27,7 @@ import BoardModule from './boards/board.module';
     AuthModule,
     BoardModule,
     ProjectModule,
+    BoardMemberModule,
   ],
   controllers: [AppController],
   providers: [AppService],

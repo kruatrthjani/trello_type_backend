@@ -9,16 +9,30 @@ type Board {
   boardDescription: String
 }
 
+type BoardMemberClass {
+  boardMemberId: String!
+  boardId: String!
+  userId: String!
+  canCreate: String!
+  canView: String!
+  canDelete: String!
+  canEdit: String!
+  canComment: String!
+  createdAt: String!
+}
+
 type Query {
   hello: String!
   getAllBoard: [Board!]!
   getBoard(id: String!): Board!
+  BoardMember: BoardMemberClass!
 }
 
 type Mutation {
-  createBoard(data: CreateBoardInput!): Board!
+  createBoard(data: CreateBoardInput!, projectId: String!): Board!
   updateBoard(data: UpdateBoardInput!): Board!
   deleteBoard(id: String!): Board!
+  CreateBoardMember: BoardMemberClass!
 }
 
 input CreateBoardInput {

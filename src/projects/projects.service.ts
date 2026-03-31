@@ -17,9 +17,9 @@ export class ProjectService{
         try{
             const founded=await this.prisma.projects.findUnique({
                 where:{
-                    projectName_clientName: {
+                    projectName_clientId: {
                     projectName: obj.projectName,
-                    clientName: obj.clientName ?? "",
+                    clientId: obj.clientId ?? "",
                 }
             }
             })

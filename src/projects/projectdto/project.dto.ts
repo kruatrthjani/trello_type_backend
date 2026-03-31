@@ -40,4 +40,8 @@ export class ProjectDto {
   @IsString()
   @IsNotEmpty()
   readonly estimatedDuration: string;
+
+  @IsString()
+  @IsOptional()
+  readonly clientId?: string;
 }

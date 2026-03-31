@@ -19,7 +19,7 @@ export class AuthDto {
 
   @ValidateIf(o => o.mode === 'register' || o.mode === 'login')
   @IsEmail({}, { message: 'Enter a valid email address' })
-  email?: string;
+  email: string;
 
   /* ---------------- PASSWORD ---------------- */
 

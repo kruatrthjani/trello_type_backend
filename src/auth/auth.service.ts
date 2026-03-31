@@ -113,7 +113,7 @@ export class AuthService {
 
     let profile: {
       providerId: string;
-      email?: string;
+      email: string;
       name?: string;
     };
 
@@ -137,7 +137,7 @@ export class AuthService {
         data: {
           provider,
           providerId: profile.providerId,
-          email: profile.email ?? null,
+          email: profile.email,
           name: profile.name ?? null,
           password: null,
         },
@@ -177,7 +177,7 @@ export class AuthService {
 
     const decoded = jwt.decode(tokenData.id_token) as {
       sub: string;
-      email?: string;
+      email: string;
       name?: string;
       aud?: string;
     } | null;
@@ -246,10 +246,14 @@ export class AuthService {
 
     const primaryEmail = emails.find(e => e.primary)?.email;
 
-    return {
-      providerId: String(user.id),
-      email: primaryEmail,
-      name: user.name ?? undefined,
-    };
+if (!primaryEmail) {
+  throw new UnauthorizedException('Email not available from GitHub');
+}
+
+return {
+  providerId: String(user.id),
+  email: primaryEmail,
+  name: user.name ?? undefined,
+};
   }
 }

@@ -25,9 +25,9 @@ export class boardService {
   }
 
   // ✅ CREATE BOARD
-  async createBoard(data: CreateBoardInput) {
+  async createBoard(data: CreateBoardInput, projectId: string) {
     const existing = await this.prismaservice.boards.findFirst({
-      where: { boardName: data.name },
+      where: { boardName: data.name, projectId },
     });
 
     if (existing) {
@@ -37,8 +37,8 @@ export class boardService {
     return this.prismaservice.boards.create({
       data: {
         boardName: data.name,
-        boardAssigner: data.assigner,
         boardDescription: data.description,
+        projectId,
       },
     });
   }
