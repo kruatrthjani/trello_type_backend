@@ -10,15 +10,15 @@ type Board {
 }
 
 type BoardMemberClass {
-  boardMemberId: String!
   boardId: String!
   userId: String!
-  canCreate: String!
-  canView: String!
-  canDelete: String!
-  canEdit: String!
-  canComment: String!
-  createdAt: String!
+  role: RoleType!
+}
+
+enum RoleType {
+  ADMIN
+  MEMBER
+  VIEWER
 }
 
 type Query {
@@ -32,7 +32,7 @@ type Mutation {
   createBoard(data: CreateBoardInput!, projectId: String!): Board!
   updateBoard(data: UpdateBoardInput!): Board!
   deleteBoard(id: String!): Board!
-  CreateBoardMember: BoardMemberClass!
+  CreateBoardMember(boardId: String!, role: RoleType!, userId: String!): BoardMemberClass!
 }
 
 input CreateBoardInput {

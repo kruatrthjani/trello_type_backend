@@ -1,31 +1,24 @@
-import { Field,ObjectType } from "@nestjs/graphql";
+import { ObjectType, Field, registerEnumType } from "@nestjs/graphql";
+
+export enum RoleType {
+  ADMIN = "ADMIN",
+  MEMBER = "MEMBER",
+  VIEWER = "VIEWER",
+}
+
+registerEnumType(RoleType, {
+  name: "RoleType",
+});
 
 @ObjectType()
-export class BoardMemberClass{
-    @Field()
-    boardMemberId:string;
+export class BoardMemberClass {
 
-    @Field()
-    boardId:string;
+  @Field()
+  boardId: string;
 
-    @Field()
-    userId:string;
+  @Field()
+  userId: string;
 
-    @Field()
-    canCreate:string;
-
-    @Field()
-    canView:string;
-    
-    @Field()
-    canDelete:String;
-
-    @Field()
-    canEdit:string;
-
-    @Field()
-    canComment:string;
-
-    @Field()
-    createdAt:string;
+  @Field(() => RoleType)
+  role: RoleType;
 }
