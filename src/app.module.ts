@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -11,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProjectModule } from './projects/projects.module';
 import BoardModule from './boards/board.module';
 import BoardMemberModule from './BoardMember/BoardMember.module';
+import { JwtAccessGuard } from './auth/jwt-access.guard';
 
 
 @Module({
@@ -30,6 +32,6 @@ import BoardMemberModule from './BoardMember/BoardMember.module';
     BoardMemberModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers:[AppService],
 })
 export class AppModule {}

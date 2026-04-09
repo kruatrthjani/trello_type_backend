@@ -16,6 +16,7 @@ export class BoardMemberClass {
   @Field()
   boardId: string;
 
+  
   @Field()
   userId: string;
 
