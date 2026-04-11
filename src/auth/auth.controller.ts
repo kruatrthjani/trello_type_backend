@@ -6,10 +6,12 @@ import {
   Get,
 } from '@nestjs/common';
 
+import { Public } from './public.decorator';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 
 
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -19,6 +21,7 @@ export class AuthController {
     return 'ok';
   }
 
+  
   @Post()
   authenticate(@Body() dto: AuthDto) {
     if (dto.provider) {

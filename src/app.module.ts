@@ -32,6 +32,12 @@ import { JwtAccessGuard } from './auth/jwt-access.guard';
     BoardMemberModule,
   ],
   controllers: [AppController],
-  providers:[AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAccessGuard,
+    },
+  ],
 })
 export class AppModule {}

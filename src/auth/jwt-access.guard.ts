@@ -11,9 +11,22 @@ import { IS_PUBLIC_KEY } from './public.decorator';
 
 @Injectable()
 export class JwtAccessGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers.authorization;
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
+    const httpRequest = context.switchToHttp().getRequest();
+    const gqlContext = GqlExecutionContext.create(context).getContext();
+    const request = httpRequest?.headers ? httpRequest : gqlContext?.req;
+    const authHeader = request?.headers?.authorization;
 
     if (!authHeader) {
       throw new UnauthorizedException({

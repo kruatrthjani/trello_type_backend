@@ -36,7 +36,7 @@ export class AuthService {
   /* ---------------- REGISTER ---------------- */
 
   async register(dto: AuthDto) {
-    const { email, password, name } = dto;
+    const { email, password, name,role } = dto;
 
     if (!email || !password) {
       throw new BadRequestException('Email and password required');
@@ -48,7 +48,7 @@ export class AuthService {
     const hash = await bcrypt.hash(password, 10);
 
     await this.prisma.user.create({
-      data: { email, password: hash, name },
+      data: { email, password: hash, name ,role},
     });
 
     return { message: 'User registered successfully' };

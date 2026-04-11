@@ -1,3 +1,5 @@
+import { DefaultValuePipe } from '@nestjs/common';
+import { roleType } from '@prisma/client';
 import {
   IsString,
   IsNotEmpty,
@@ -6,6 +8,7 @@ import {
   IsEmail,
   IsIn,
   ValidateIf,
+  IsOptional
 } from 'class-validator';
 
 export class AuthDto {
@@ -43,6 +46,10 @@ export class AuthDto {
   )
   retypepassword?: string;
 
+  @IsString()
+  @IsOptional()
+  role?:roleType='DEVELOPER';
+  
   /* ---------------- SOCIAL ONLY ---------------- */
 
   @ValidateIf(o => o.provider !== undefined)
