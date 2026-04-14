@@ -76,4 +76,34 @@ export class BoardMemberService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+
+  async deleteBoardMember(data:{
+    boardId:string,
+    userId:string,
+  }){
+    try{
+        const board=await this.prismaService.boardMember.findUnique({
+          where :{ userId_boardId: {
+    userId: data.userId,
+    boardId: data.boardId
+          }
+        }
+        });
+        if(!board){
+          throw new NotFoundException('Member with this board is not found')
+        }
+      return await this.prismaService.boardMember.delete({
+        where:{
+          userId_boardId:{
+            userId:data.userId,
+            boardId:data.boardId
+          }
+        }
+      })
+    }
+    catch(error){
+      throw new InternalServerErrorException(error.message)
+    }
+  }
 }

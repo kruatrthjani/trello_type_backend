@@ -7,6 +7,7 @@ export class CardController{
 
     @Query(()=>String)
     getCard(){
+        
         return this.cardService.getCard();
     }
 
