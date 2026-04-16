@@ -25,7 +25,7 @@ type Query {
   hello: String!
   getAllBoard: [Board!]!
   getBoard(id: String!): Board!
-  BoardMember: BoardMemberClass!
+  BoardMember(boardId: String!): BoardMemberClass!
 }
 
 type Mutation {
@@ -34,7 +34,7 @@ type Mutation {
   deleteBoard(id: String!): Board!
   CreateBoardMember(boardId: String!, role: RoleType!, userId: String!): BoardMemberClass!
   DeleteMember(boardId: String!, userId: String!): BoardMemberClass!
-  UpdateMember(boardId: String!): BoardMemberClass!
+  UpdateMember(boardId: String!, role: RoleType!, userId: String!): BoardMemberClass!
 }
 
 input CreateBoardInput {

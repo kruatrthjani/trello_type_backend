@@ -13,8 +13,10 @@ export class BoardMemberController{
     constructor(private readonly boardmemberservice:BoardMemberService){}
 
     @Query(()=> BoardMemberClass)
-    BoardMember(){
-        return "h"
+    BoardMember(
+        @Args('boardId') boardId:string,
+    ){
+        return this.boardmemberservice.getBoardMember(boardId)
     }
 
     @Roles('CLIENT')
@@ -40,8 +42,10 @@ export class BoardMemberController{
     @Roles('CLIENT')
     @Mutation(()=>BoardMemberClass)
     UpdateMember(
-        @Args('boardId') boardId:String
+        @Args('boardId') boardId:string,
+        @Args('role',{type:()=>RoleType}) role:RoleType,
+        @Args('userId') userId:string,
     ){
-        
+        return this.boardmemberservice.deleteBoardMember({boardId,userId});
     }
 }

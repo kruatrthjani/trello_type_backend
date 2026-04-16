@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, InternalServerErrorException } from "@nestjs/common";
+import { roleType, $Enums } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -32,7 +33,7 @@ export class BoardMemberService {
   async createBoardMember(data: {
     boardId: string;
     userId: string;
-    role: "ADMIN" | "MEMBER" | "VIEWER";
+    role: $Enums.BoardRole;
   }) {
     try {
       // ✅ Check board exists
@@ -104,6 +105,38 @@ export class BoardMemberService {
     }
     catch(error){
       throw new InternalServerErrorException(error.message)
+    }
+  }
+
+  async updateBoardMember(data:{
+      boardId:string,
+      userId:string,
+      role:$Enums.BoardRole
+  }){
+    try{
+      const findData=await this.prismaService.boardMember.findUnique({where:{
+        userId_boardId:{
+          userId:data.userId,
+          boardId:data.boardId,
+        },
+      }
+      })
+      if(!findData){
+        throw new NotFoundException("Cannot find appropriate boardId with userId");
+      }
+
+      const updatedata=await this.prismaService.boardMember.update({
+        where:{
+          userId_boardId:{
+            userId:data.userId,
+            boardId:data.boardId,
+          },
+        },
+        data:{ role:data.role }
+      });
+    return updatedata;
+    }catch(error){
+        throw new InternalServerErrorException(error)
     }
   }
 }
