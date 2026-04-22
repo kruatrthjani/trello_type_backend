@@ -4,12 +4,14 @@ import {
   ConflictException,
   UnauthorizedException,
   HttpException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { AuthDto } from './dto/auth.dto';
+import { error } from 'node:console';
 
 @Injectable()
 export class AuthService {
@@ -255,5 +257,29 @@ return {
   email: primaryEmail,
   name: user.name ?? undefined,
 };
+  }
+
+  async sendOtp(email:string){
+    try{
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        if (!email || !emailRegex.test(email)) {
+        throw new BadRequestException('Invalid email format');
+      }
+
+      this.sendToEmail(email)
+      return "working"
+    }   
+    catch(error){
+      if (error instanceof BadRequestException) {
+      throw error; 
+    }
+
+      throw new InternalServerErrorException("Internal server error")
+    }
+  }
+
+  async sendToEmail(email){
+      return email+"mail sended"
   }
 }

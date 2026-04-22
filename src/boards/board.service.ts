@@ -2,26 +2,28 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "src/prisma/prisma.service";
-import { CreateBoardInput, UpdateBoardInput } from "./dto/board.dto";
-import { NODATA } from "node:dns";
+} from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateBoardInput, UpdateBoardInput } from './dto/board.dto';
+import { NODATA } from 'node:dns';
 
 @Injectable()
 export class boardService {
   constructor(private readonly prismaservice: PrismaService) {}
 
   //get all boards
-  async getAllBoards(){
-    const data=await this.prismaservice.boards.findMany({})
-    return data; 
+  async getAllBoards() {
+    const data = await this.prismaservice.boards.findMany({});
+    return data;
   }
 
-  async getBoard(id:string){
-      const data=await this.prismaservice.boards.findUnique({where:{
-        boardId:id
-      },})
-      return data;
+  async getBoard(id: string) {
+    const data = await this.prismaservice.boards.findUnique({
+      where: {
+        boardId: id,
+      },
+    });
+    return data;
   }
 
   // ✅ CREATE BOARD
@@ -31,7 +33,7 @@ export class boardService {
     });
 
     if (existing) {
-      throw new ConflictException("Already existing board");
+      throw new ConflictException('Already existing board');
     }
 
     return this.prismaservice.boards.create({
@@ -50,7 +52,7 @@ export class boardService {
     });
 
     if (!existing) {
-      throw new NotFoundException("Board not found");
+      throw new NotFoundException('Board not found');
     }
 
     return this.prismaservice.boards.update({
@@ -67,18 +69,21 @@ export class boardService {
     });
   }
 
-  async deleteBoard(id:string){
-  
-    const data=await this.prismaservice.boards.findUnique({where: {
-      boardId:id},
+  async deleteBoard(id: string) {
+    const data = await this.prismaservice.boards.findUnique({
+      where: {
+        boardId: id,
+      },
     });
 
-    if(!data){
-      throw new NotFoundException("Data didn't exist")
+    if (!data) {
+      throw new NotFoundException("Data didn't exist");
     }
 
-    const response=await this.prismaservice.boards.delete({where:{
-      boardId:id,
-    },})
+    const response = await this.prismaservice.boards.delete({
+      where: {
+        boardId: id,
+      },
+    });
   }
 }

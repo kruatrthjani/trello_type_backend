@@ -13,7 +13,7 @@ import { ProjectModule } from './projects/projects.module';
 import BoardModule from './boards/board.module';
 import BoardMemberModule from './BoardMember/BoardMember.module';
 import { JwtAccessGuard } from './auth/jwt-access.guard';
-
+import CardModule from './Cards/Card.module';
 
 @Module({
   imports: [
@@ -30,6 +30,7 @@ import { JwtAccessGuard } from './auth/jwt-access.guard';
     BoardModule,
     ProjectModule,
     BoardMemberModule,
+    CardModule,
   ],
   controllers: [AppController],
   providers: [

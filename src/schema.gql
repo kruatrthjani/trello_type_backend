@@ -26,6 +26,7 @@ type Query {
   getAllBoard: [Board!]!
   getBoard(id: String!): Board!
   BoardMember(boardId: String!): BoardMemberClass!
+  getCard: String!
 }
 
 type Mutation {

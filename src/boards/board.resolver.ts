@@ -9,7 +9,7 @@ export class BoardResolver {
 
   @Query(() => String)
   hello() {
-    return "GraphQL working";
+    return 'GraphQL working';
   }
 
   // ✅ CREATE with object
@@ -18,38 +18,27 @@ export class BoardResolver {
     @Args('data') data: CreateBoardInput,
     @Args('projectId') projectId: string,
   ) {
-    return this.BoardService.createBoard(
-      data,
-      projectId
-    );
+    return this.BoardService.createBoard(data, projectId);
   }
 
   // ✅ UPDATE with object
   @Mutation(() => Board)
-  async updateBoard(
-    @Args('data') data: UpdateBoardInput,
-  ) {
-    return this.BoardService.updateBoard(
-      data
-    );
+  async updateBoard(@Args('data') data: UpdateBoardInput) {
+    return this.BoardService.updateBoard(data);
   }
 
-  @Mutation(()=>Board)
-  async deleteBoard(
-    @Args('id') id:string,
-  ){
+  @Mutation(() => Board)
+  async deleteBoard(@Args('id') id: string) {
     return this.BoardService.deleteBoard(id);
   }
 
-  @Query(()=>[Board])
-  async getAllBoard(){
+  @Query(() => [Board])
+  async getAllBoard() {
     return this.BoardService.getAllBoards();
   }
 
   @Query(() => Board)
-  async getBoard(
-  @Args('id') id: string
-  ) {
-  return this.BoardService.getBoard(id);
+  async getBoard(@Args('id') id: string) {
+    return this.BoardService.getBoard(id);
   }
 }

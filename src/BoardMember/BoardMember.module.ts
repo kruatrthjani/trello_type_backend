@@ -1,14 +1,10 @@
-import { Injectable, Module } from "@nestjs/common";
-import { BoardMemberService } from "./BoardMember.service";
-import { BoardMemberController } from "./BoardMember.resolver";
-
-
-
+import { Injectable, Module } from '@nestjs/common';
+import { BoardMemberService } from './BoardMember.service';
+import { BoardMemberController } from './BoardMember.resolver';
 
 @Module({
-    // controllers:[BoardMemberController],
-    providers:[BoardMemberController,BoardMemberService],
-    // exports:[BoardMemberService]
-
+  // controllers:[BoardMemberController],
+  providers: [BoardMemberController, BoardMemberService],
+  // exports:[BoardMemberService]
 })
-export default class BoardMemberModule{}
+export default class BoardMemberModule {}

@@ -1,21 +1,18 @@
-import { IsEnum, IsString } from "class-validator";
+import { IsEnum, IsString } from 'class-validator';
 
-enum roleType{
-    ADMIN='ADMIN',
-    MEMBER='MEMBER',
-    VIEWER='VIEWER',
+enum roleType {
+  ADMIN = 'ADMIN',
+  MEMBER = 'MEMBER',
+  VIEWER = 'VIEWER',
 }
 
-export class boardMember{
+export class boardMember {
+  @IsString()
+  readonly boardId: string;
 
-    @IsString()
-    readonly boardId:string;
+  @IsEnum(roleType)
+  readonly role: roleType;
 
-    @IsEnum(roleType)
-    readonly role:roleType;
-
-    @IsString()
-    readonly projectId:string;
-
-   
+  @IsString()
+  readonly projectId: string;
 }

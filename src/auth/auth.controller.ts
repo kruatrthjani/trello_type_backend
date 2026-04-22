@@ -18,10 +18,18 @@ export class AuthController {
 
   @Get()
   health() {
-    return 'ok';
+    return 'okay';
   }
 
-  
+  @Post()
+  login(@Body() dto:AuthDto){
+    if(dto.mode==='login'){
+      return this.authService.login(dto)
+    }
+  }
+
+
+
   @Post()
   authenticate(@Body() dto: AuthDto) {
     if (dto.provider) {
@@ -34,6 +42,19 @@ export class AuthController {
 
     return this.authService.login(dto);
   }
+
+  @Post("send-otp")
+  sendOtp(@Body() email:string){
+    
+    return this.authService.sendOtp(email)
+  }
+
+
+  // @Post("forgot-password")
+  // forgotPassword(@Body () ){
+
+  // }
+
 
   @Post('refresh')
   refresh(@Headers('authorization') authHeader: string) {

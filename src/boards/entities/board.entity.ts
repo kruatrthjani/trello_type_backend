@@ -2,7 +2,6 @@ import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class Board {
-
   @Field()
   boardId: string;
 
@@ -14,5 +13,4 @@ export class Board {
 
   @Field({ nullable: true })
   boardDescription?: string;
-
 }

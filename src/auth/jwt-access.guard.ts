@@ -37,10 +37,7 @@ export class JwtAccessGuard implements CanActivate {
     const token = authHeader.replace('Bearer ', '');
 
     try {
-      const payload = jwt.verify(
-        token,
-        process.env.JWT_ACCESS_SECRET,
-      ) as any;
+      const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET) as any;
 
       if (payload.type !== 'access') {
         throw new UnauthorizedException({

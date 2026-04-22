@@ -1,8 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class CardService{
-    getCard(){
-        return "Get The Card"
-    }
+export class CardService {
+  constructor(private readonly prismaservice: PrismaService) {}
+  getCard() {
+    return 'Get The Card';
+  }
 }

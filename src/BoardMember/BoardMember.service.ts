@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from "@nestjs/common";
-import { roleType, $Enums } from "@prisma/client";
-import { PrismaService } from "src/prisma/prisma.service";
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { roleType, $Enums } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class BoardMemberService {
@@ -20,11 +24,10 @@ export class BoardMemberService {
       });
 
       if (!board) {
-        throw new NotFoundException("Board does not exist");
+        throw new NotFoundException('Board does not exist');
       }
 
       return board.members;
-
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -42,7 +45,7 @@ export class BoardMemberService {
       });
 
       if (!board) {
-        throw new NotFoundException("Board does not exist");
+        throw new NotFoundException('Board does not exist');
       }
 
       // ✅ Check user exists
@@ -51,7 +54,7 @@ export class BoardMemberService {
       });
 
       if (!user) {
-        throw new NotFoundException("User does not exist");
+        throw new NotFoundException('User does not exist');
       }
 
       // ✅ Prevent duplicate membership
@@ -65,78 +68,76 @@ export class BoardMemberService {
       });
 
       if (existing) {
-        throw new NotFoundException("User already a member of this board");
+        throw new NotFoundException('User already a member of this board');
       }
 
       // ✅ Create member
       return await this.prismaService.boardMember.create({
         data,
       });
-
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-
-  async deleteBoardMember(data:{
-    boardId:string,
-    userId:string,
-  }){
-    try{
-        const board=await this.prismaService.boardMember.findUnique({
-          where :{ userId_boardId: {
-    userId: data.userId,
-    boardId: data.boardId
-          }
-        }
-        });
-        if(!board){
-          throw new NotFoundException('Member with this board is not found')
-        }
+  async deleteBoardMember(data: { boardId: string; userId: string }) {
+    try {
+      const board = await this.prismaService.boardMember.findUnique({
+        where: {
+          userId_boardId: {
+            userId: data.userId,
+            boardId: data.boardId,
+          },
+        },
+      });
+      if (!board) {
+        throw new NotFoundException('Member with this board is not found');
+      }
       return await this.prismaService.boardMember.delete({
-        where:{
-          userId_boardId:{
-            userId:data.userId,
-            boardId:data.boardId
-          }
-        }
-      })
-    }
-    catch(error){
-      throw new InternalServerErrorException(error.message)
+        where: {
+          userId_boardId: {
+            userId: data.userId,
+            boardId: data.boardId,
+          },
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
     }
   }
 
-  async updateBoardMember(data:{
-      boardId:string,
-      userId:string,
-      role:$Enums.BoardRole
-  }){
-    try{
-      const findData=await this.prismaService.boardMember.findUnique({where:{
-        userId_boardId:{
-          userId:data.userId,
-          boardId:data.boardId,
-        },
-      }
-      })
-      if(!findData){
-        throw new NotFoundException("Cannot find appropriate boardId with userId");
-      }
-
-      const updatedata=await this.prismaService.boardMember.update({
-        where:{
-          userId_boardId:{
-            userId:data.userId,
-            boardId:data.boardId,
+  async updateBoardMember(data: {
+    boardId: string;
+    userId: string;
+    role: $Enums.BoardRole;
+  }) {
+    try {
+      const findData = await this.prismaService.boardMember.findUnique({
+        where: {
+          userId_boardId: {
+            userId: data.userId,
+            boardId: data.boardId,
           },
         },
-        data:{ role:data.role }
       });
-    return updatedata;
-    }catch(error){
-        throw new InternalServerErrorException(error)
+      if (!findData) {
+        throw new NotFoundException(
+          'Cannot find appropriate boardId with userId',
+        );
+      }
+
+      const updatedata = await this.prismaService.boardMember.update({
+        where: {
+          userId_boardId: {
+            userId: data.userId,
+            boardId: data.boardId,
+          },
+        },
+        data: { role: data.role },
+      });
+      return updatedata;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
   }
 }

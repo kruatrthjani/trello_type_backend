@@ -6,15 +6,18 @@ import { ProjectService } from './projects/projects.service';
 @Public()
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService,private readonly projectservice:ProjectService) {}
-  
+  constructor(
+    private readonly appService: AppService,
+    private readonly projectservice: ProjectService,
+  ) {}
+
   @Get()
   getHello(): string {
     return this.appService.getHello();
   }
-  
-  @Get("/pr")
-  getprojects(){
-     return this.projectservice.getProjects();
+
+  @Get('/pr')
+  getprojects() {
+    return this.projectservice.getProjects();
   }
 }

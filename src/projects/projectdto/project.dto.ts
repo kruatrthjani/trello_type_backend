@@ -4,11 +4,11 @@ import {
   IsString,
   ValidateIf,
   IsOptional,
-} from "class-validator";
+} from 'class-validator';
 
 export enum Ptype {
-  CLIENT = "client",
-  INHOUSE = "inhouse",
+  CLIENT = 'client',
+  INHOUSE = 'inhouse',
 }
 
 export class ProjectDto {
