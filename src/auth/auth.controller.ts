@@ -44,9 +44,15 @@ export class AuthController {
   }
 
   @Post("send-otp")
-  sendOtp(@Body() email:string){
+  sendOtp(@Body('email') email:string){
     
     return this.authService.sendOtp(email)
+  }
+
+  @Post("verify-otp")
+  verifyOtp(@Body() body: { email: string; otp: string }) {
+    const { email, otp } = body;
+    return this.authService.verifyOtp(email, otp);
   }
 
 

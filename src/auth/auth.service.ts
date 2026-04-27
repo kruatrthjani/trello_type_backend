@@ -11,11 +11,14 @@ import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { AuthDto } from './dto/auth.dto';
-import { error } from 'node:console';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   /* ---------------- TOKEN HELPERS ---------------- */
 
@@ -262,13 +265,13 @@ return {
   async sendOtp(email:string){
     try{
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
+        // console.log("email=",email)
         if (!email || !emailRegex.test(email)) {
         throw new BadRequestException('Invalid email format');
       }
 
-      this.sendToEmail(email)
-      return "working"
+      const otp = await this.emailService.sendOtpEmail(email);
+      return { otp };
     }   
     catch(error){
       if (error instanceof BadRequestException) {
@@ -279,7 +282,18 @@ return {
     }
   }
 
-  async sendToEmail(email){
-      return email+"mail sended"
+  async verifyOtp(email: string, otp: string) {
+    try {
+      const isValid = await this.emailService.verifyOtp(email, otp);
+      if (!isValid) {
+        throw new BadRequestException('Invalid or expired OTP');
+      }
+      return { message: 'OTP verified successfully' };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Internal server error');
+    }
   }
 }

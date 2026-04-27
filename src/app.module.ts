@@ -14,6 +14,7 @@ import BoardModule from './boards/board.module';
 import BoardMemberModule from './BoardMember/BoardMember.module';
 import { JwtAccessGuard } from './auth/jwt-access.guard';
 import CardModule from './Cards/Card.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import CardModule from './Cards/Card.module';
     ProjectModule,
     BoardMemberModule,
     CardModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [
