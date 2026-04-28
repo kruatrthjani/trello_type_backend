@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { RedisService } from '../redis/redis.service';
-
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class EmailService {
   private transporter: nodemailer.Transporter | null = null;
@@ -40,7 +40,7 @@ export class EmailService {
         this.transporter = nodemailer.createTransport({
           host: process.env.SMTP_HOST || 'smtp.gmail.com',
           port: parseInt(process.env.SMTP_PORT || '587'),
-          secure: true,
+          secure: false,
           auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
@@ -51,6 +51,16 @@ export class EmailService {
     return this.transporter;
   }
 
+   async hashPassword(password: string): Promise<string> {
+     const saltRounds = 10;
+     return await bcrypt.hash(password, saltRounds);
+   }
+
+   // Method to check password during login
+   async comparePassword(password: string, hash: string): Promise<boolean> {
+     return await bcrypt.compare(password, hash);
+   }
+
   async sendOtpEmail(email: string): Promise<string> {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -60,13 +70,16 @@ export class EmailService {
       subject: 'Your OTP Code',
       text: `Your OTP code is: ${otp}`,
     };
-    console.log("send mail=",mailOptions)
+    // console.log("send mail=",mailOptions)
     try {
       const transporter = await this.getTransporter();
       await transporter.sendMail(mailOptions);
+      // console.log('is there');
       // Store OTP in Redis with 5 minutes TTL
-      await this.redisService.set(`otp:${email}`, otp, 300);
-      return otp;
+      const encryptedOtp = await this.hashPassword(otp);
+      console.log("encrypted otp=",encryptedOtp)
+      await this.redisService.set(`otp:${email}`, encryptedOtp, 300);
+      return "Otp sended successfully";
     } catch (error) {
       console.error('Email sending error:', error);
       throw new InternalServerErrorException('Failed to send email');
@@ -75,7 +88,12 @@ export class EmailService {
 
   async verifyOtp(email: string, otp: string): Promise<boolean> {
     const storedOtp = await this.redisService.get(`otp:${email}`);
-    if (storedOtp === otp) {
+    if (!storedOtp) {
+      return false;
+    }
+    console.log("before decrypt=",storedOtp)
+    const isMatch = await this.comparePassword(otp, storedOtp);
+    if (isMatch) {
       // Delete the OTP after successful verification
       await this.redisService.del(`otp:${email}`);
       return true;
