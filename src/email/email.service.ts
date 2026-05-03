@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { RedisService } from '../redis/redis.service';
 import * as bcrypt from 'bcrypt';
@@ -62,24 +62,48 @@ export class EmailService {
    }
 
   async sendOtpEmail(email: string): Promise<string> {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const blockedKey = `otp:blocked:${email}`;
+    const sendCountKey = `otp:send_count:${email}`;
 
+    if (await this.redisService.exists(blockedKey)) {
+      throw new BadRequestException(
+        'Too many OTP requests or failed attempts. Try again later.',
+      );
+    }
+
+    const sendCount = await this.redisService.incr(sendCountKey);
+    if (sendCount === 1) {
+      await this.redisService.expire(sendCountKey, 3600); // 1 hour window
+    }
+
+    const sendLimit = 5;
+    if (sendCount > sendLimit) {
+      await this.redisService.set(blockedKey, '1', 900); // 15 minute block
+      throw new BadRequestException(
+        'Too many OTP requests. Please try again after 15 minutes.',
+      );
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const mailOptions = {
       from: process.env.SMTP_USER || 'test@example.com',
       to: email,
       subject: 'Your OTP Code',
       text: `Your OTP code is: ${otp}`,
     };
-    // console.log("send mail=",mailOptions)
+
     try {
       const transporter = await this.getTransporter();
       await transporter.sendMail(mailOptions);
-      // console.log('is there');
-      // Store OTP in Redis with 5 minutes TTL
+
       const encryptedOtp = await this.hashPassword(otp);
-      console.log("encrypted otp=",encryptedOtp)
-      await this.redisService.set(`otp:${email}`, encryptedOtp, 300);
-      return "Otp sended successfully";
+      const otpData = {
+        otp: encryptedOtp,
+        isVerified: false,
+      };
+
+      await this.redisService.set(`otp:${email}`, JSON.stringify(otpData), 300);
+      return 'Otp sended successfully';
     } catch (error) {
       console.error('Email sending error:', error);
       throw new InternalServerErrorException('Failed to send email');
@@ -87,17 +111,41 @@ export class EmailService {
   }
 
   async verifyOtp(email: string, otp: string): Promise<boolean> {
-    const storedOtp = await this.redisService.get(`otp:${email}`);
+    const blockedKey = `otp:blocked:${email}`;
+    const failedKey = `otp:failed:${email}`;
+    const key = `otp:${email}`;
+
+    if (await this.redisService.exists(blockedKey)) {
+      throw new BadRequestException(
+        'Too many failed OTP attempts. Try again later.',
+      );
+    }
+
+    const storedOtp = await this.redisService.get(key);
     if (!storedOtp) {
       return false;
     }
-    console.log("before decrypt=",storedOtp)
-    const isMatch = await this.comparePassword(otp, storedOtp);
+
+    const parsed = JSON.parse(storedOtp);
+    const isMatch = await this.comparePassword(otp, parsed.otp);
+
     if (isMatch) {
-      // Delete the OTP after successful verification
-      await this.redisService.del(`otp:${email}`);
+      await this.redisService.del(failedKey);
+      await this.redisService.del(blockedKey);
+      await this.redisService.del(key);
       return true;
     }
+
+    const failedCount = await this.redisService.incr(failedKey);
+    if (failedCount === 1) {
+      await this.redisService.expire(failedKey, 600); // 10 minute window
+    }
+
+    const failLimit = 3;
+    if (failedCount >= failLimit) {
+      await this.redisService.set(blockedKey, '1', 900); // 15 minute block
+    }
+
     return false;
   }
 }

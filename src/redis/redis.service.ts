@@ -37,6 +37,12 @@ export class RedisService implements OnModuleDestroy {
     }
   }
 
+  // async modify(key:string,value:string):Promise<void>{
+  //   if(key){
+  //     await this.client
+  //   }
+  // }
+
   async get(key: string): Promise<string | null> {
     return await this.client.get(key);
   }
@@ -47,5 +53,17 @@ export class RedisService implements OnModuleDestroy {
 
   async exists(key: string): Promise<number> {
     return await this.client.exists(key);
+  }
+
+  async incr(key: string): Promise<number> {
+    return await this.client.incr(key);
+  }
+
+  async expire(key: string, seconds: number): Promise<number> {
+    return await this.client.expire(key, seconds);
+  }
+
+  async ttl(key: string): Promise<number> {
+    return await this.client.ttl(key);
   }
 }

@@ -8,7 +8,8 @@ import {
 
 import { Public } from './public.decorator';
 import { AuthService } from './auth.service';
-import { AuthDto } from './dto/auth.dto';
+import {  loginDto } from './dto/login.dto';
+import { signupDto } from './dto/signup.dto';
 
 
 @Public()
@@ -21,26 +22,16 @@ export class AuthController {
     return 'okay';
   }
 
-  @Post()
-  login(@Body() dto:AuthDto){
-    if(dto.mode==='login'){
-      return this.authService.login(dto)
-    }
+  @Post('login')
+  login(@Body() dto:loginDto){    
+      return this.authService.login(dto)    
   }
 
 
 
-  @Post()
-  authenticate(@Body() dto: AuthDto) {
-    if (dto.provider) {
-      return this.authService.socialLogin(dto);
-    }
-
-    if (dto.mode === 'register') {
+  @Post("sigunp")
+  authenticate(@Body() dto: signupDto) {
       return this.authService.register(dto);
-    }
-
-    return this.authService.login(dto);
   }
 
   @Post("send-otp")

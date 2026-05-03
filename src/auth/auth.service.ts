@@ -10,14 +10,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
-import { AuthDto } from './dto/auth.dto';
 import { EmailService } from '../email/email.service';
-
+import { RedisService } from 'src/redis/redis.service';
+import { signupDto } from './dto/signup.dto';
+import { loginDto } from './dto/login.dto';
+import { socialDto } from './dto/social.dto';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
+    private readonly redisService:RedisService,
   ) {}
 
   /* ---------------- TOKEN HELPERS ---------------- */
@@ -40,8 +43,8 @@ export class AuthService {
 
   /* ---------------- REGISTER ---------------- */
 
-  async register(dto: AuthDto) {
-    const { email, password, name,role } = dto;
+  async register(dto: signupDto) {
+    const { email, password, name } = dto;
 
     if (!email || !password) {
       throw new BadRequestException('Email and password required');
@@ -52,16 +55,17 @@ export class AuthService {
 
     const hash = await bcrypt.hash(password, 10);
 
-    await this.prisma.user.create({
-      data: { email, password: hash, name ,role},
-    });
+    await this.redisService.set(`register-${email}`,JSON.stringify({data:{email,name,password}}))
+    // await this.prisma.user.create({
+    //   data: { email, password: hash, name ,role},
+    // });
 
-    return { message: 'User registered successfully' };
+    return { message: 'Enter otp to verify' };
   }
 
   /* ---------------- LOGIN ---------------- */
 
-  async login(dto: AuthDto) {
+  async login(dto: loginDto) {
     const { email, password } = dto;
 
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -109,7 +113,7 @@ export class AuthService {
 
   /* ---------------- SOCIAL LOGIN ---------------- */
 
-  async socialLogin(dto: AuthDto) {
+  async socialLogin(dto: socialDto) {
     const { provider, code } = dto;
 
     if (!provider || !code) {
