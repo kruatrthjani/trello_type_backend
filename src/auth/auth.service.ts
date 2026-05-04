@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
   HttpException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -15,6 +16,7 @@ import { RedisService } from 'src/redis/redis.service';
 import { signupDto } from './dto/signup.dto';
 import { loginDto } from './dto/login.dto';
 import { socialDto } from './dto/social.dto';
+import { json } from 'stream/consumers';
 @Injectable()
 export class AuthService {
   constructor(
@@ -44,6 +46,7 @@ export class AuthService {
   /* ---------------- REGISTER ---------------- */
 
   async register(dto: signupDto) {
+    try{
     const { email, password, name } = dto;
 
     if (!email || !password) {
@@ -55,12 +58,17 @@ export class AuthService {
 
     const hash = await bcrypt.hash(password, 10);
 
-    await this.redisService.set(`register-${email}`,JSON.stringify({data:{email,name,password}}))
+    await this.redisService.set(`register-${email}`,JSON.stringify({data:{email,name,password}}),300)
     // await this.prisma.user.create({
     //   data: { email, password: hash, name ,role},
     // });
 
     return { message: 'Enter otp to verify' };
+  }
+  catch(error){
+    if(error instanceof BadRequestException||error)
+      throw new InternalServerErrorException(error)
+    }
   }
 
   /* ---------------- LOGIN ---------------- */
@@ -266,32 +274,70 @@ return {
 };
   }
 
-  async sendOtp(email:string){
-    try{
+  async sendOtp(email: string) {
+    try {
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        // console.log("email=",email)
-        if (!email || !emailRegex.test(email)) {
+      if (!email || !emailRegex.test(email)) {
         throw new BadRequestException('Invalid email format');
+      }
+
+      const registerKey = `register-${email}`;
+      const blockKey = `otp-blocked-${email}`;
+      const countKey = `otp-request-${email}`;
+
+      const isBlocked = await this.redisService.exists(blockKey);
+      if (isBlocked) {
+        throw new BadRequestException(
+          'Too many OTP requests. Try again in 5 minutes.',
+        );
+      }
+
+      const emailExistinRedis = await this.redisService.get(registerKey);
+      if (!emailExistinRedis) {
+        throw new NotFoundException('No Registered email');
+      }
+
+      const requestCount = await this.redisService.incr(countKey);
+      if (requestCount === 1) {
+        await this.redisService.expire(countKey, 300);
+      }
+
+      if (requestCount >= 5) {
+        await this.redisService.set(blockKey, 'blocked', 300);
+        await this.redisService.del(countKey);
+        throw new BadRequestException(
+          'Too many OTP requests. Email blocked for 5 minutes.',
+        );
       }
 
       const otp = await this.emailService.sendOtpEmail(email);
       return { otp };
-    }   
-    catch(error){
-      if (error instanceof BadRequestException) {
-      throw error; 
-    }
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof BadRequestException) {
+        throw error;
+      }
 
-      throw new InternalServerErrorException("Internal server error")
+      throw new InternalServerErrorException('Internal server error');
     }
   }
 
   async verifyOtp(email: string, otp: string) {
     try {
+
       const isValid = await this.emailService.verifyOtp(email, otp);
+      
       if (!isValid) {
         throw new BadRequestException('Invalid or expired OTP');
       }
+      const existData=await this.redisService.get(`register-${email}`)
+      console.log("json-parse",JSON.stringify(existData))
+      if(existData){
+        const data=await this.prisma.user.create(JSON.parse(existData))
+        await this.redisService.del(`register-${email}`)
+        await this.redisService.del(`otp-request-${email}`)
+        await this.redisService.del(`otp-blocked-${email}`)
+      }
+      
       return { message: 'OTP verified successfully' };
     } catch (error) {
       if (error instanceof BadRequestException) {

@@ -29,7 +29,7 @@ export class AuthController {
 
 
 
-  @Post("sigunp")
+  @Post("signup")
   authenticate(@Body() dto: signupDto) {
       return this.authService.register(dto);
   }

@@ -111,11 +111,12 @@ export class EmailService {
   }
 
   async verifyOtp(email: string, otp: string): Promise<boolean> {
-    const blockedKey = `otp:blocked:${email}`;
+    // const blockedKey = `otp:blocked:${email}`;
+    const blockKey = `otp-blocked-${email}`;
     const failedKey = `otp:failed:${email}`;
-    const key = `otp:${email}`;
+    const key = `register-otp:${email}`;
 
-    if (await this.redisService.exists(blockedKey)) {
+    if (await this.redisService.exists(blockKey)) {
       throw new BadRequestException(
         'Too many failed OTP attempts. Try again later.',
       );
@@ -131,20 +132,22 @@ export class EmailService {
 
     if (isMatch) {
       await this.redisService.del(failedKey);
-      await this.redisService.del(blockedKey);
+      await this.redisService.del(blockKey);
       await this.redisService.del(key);
       return true;
     }
 
     const failedCount = await this.redisService.incr(failedKey);
     if (failedCount === 1) {
-      await this.redisService.expire(failedKey, 600); // 10 minute window
+      await this.redisService.expire(failedKey, 300); // 10 minute window
     }
 
     const failLimit = 3;
     if (failedCount >= failLimit) {
-      await this.redisService.set(blockedKey, '1', 900); // 15 minute block
+      await this.redisService.set(blockKey, '1', 300); // 15 minute block
     }
+
+    
 
     return false;
   }
