@@ -36,6 +36,7 @@ type Mutation {
   CreateBoardMember(boardId: String!, role: RoleType!, userId: String!): BoardMemberClass!
   DeleteMember(boardId: String!, userId: String!): BoardMemberClass!
   UpdateMember(boardId: String!, role: RoleType!, userId: String!): BoardMemberClass!
+  createCard: String!
 }
 
 input CreateBoardInput {

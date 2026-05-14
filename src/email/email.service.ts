@@ -64,7 +64,7 @@ export class EmailService {
   async sendOtpEmail(email: string): Promise<string> {
     const blockedKey = `otp:blocked:${email}`;
     const sendCountKey = `otp:send_count:${email}`;
-
+    const registerKey=`register-otp:${email}`;
     if (await this.redisService.exists(blockedKey)) {
       throw new BadRequestException(
         'Too many OTP requests or failed attempts. Try again later.',
@@ -73,18 +73,19 @@ export class EmailService {
 
     const sendCount = await this.redisService.incr(sendCountKey);
     if (sendCount === 1) {
-      await this.redisService.expire(sendCountKey, 3600); // 1 hour window
+      await this.redisService.expire(sendCountKey, 100); // 1 hour window
     }
 
     const sendLimit = 5;
     if (sendCount > sendLimit) {
-      await this.redisService.set(blockedKey, '1', 900); // 15 minute block
+      await this.redisService.set(blockedKey, '1', 100); // 15 minute block
       throw new BadRequestException(
-        'Too many OTP requests. Please try again after 15 minutes.',
+        'Too many OTP requests. Please try again after 5 minutes.',
       );
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    let otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
     const mailOptions = {
       from: process.env.SMTP_USER || 'test@example.com',
       to: email,
@@ -101,8 +102,12 @@ export class EmailService {
         otp: encryptedOtp,
         isVerified: false,
       };
-
-      await this.redisService.set(`otp:${email}`, JSON.stringify(otpData), 300);
+      const existingData=await this.redisService.get(registerKey);
+      console.log("existingdata is working",)
+      const parsedData=existingData?JSON.parse(existingData):{};
+      parsedData.otp= await bcrypt.hash(otp, 10);
+      console.log("parsed otp=",parsedData)
+       await this.redisService.set(`${registerKey}`, JSON.stringify(parsedData), 300);
       return 'Otp sended successfully';
     } catch (error) {
       console.error('Email sending error:', error);
@@ -115,25 +120,26 @@ export class EmailService {
     const blockKey = `otp-blocked-${email}`;
     const failedKey = `otp:failed:${email}`;
     const key = `register-otp:${email}`;
-
+  //  console.log("is here")
     if (await this.redisService.exists(blockKey)) {
+      
       throw new BadRequestException(
         'Too many failed OTP attempts. Try again later.',
       );
-    }
-
+    }    
     const storedOtp = await this.redisService.get(key);
+    console.log("storedotp=",storedOtp)
     if (!storedOtp) {
       return false;
     }
-
+    
     const parsed = JSON.parse(storedOtp);
     const isMatch = await this.comparePassword(otp, parsed.otp);
 
     if (isMatch) {
       await this.redisService.del(failedKey);
       await this.redisService.del(blockKey);
-      await this.redisService.del(key);
+      // await this.redisService.del(key);
       return true;
     }
 

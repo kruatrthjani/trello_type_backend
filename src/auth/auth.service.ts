@@ -6,6 +6,7 @@ import {
   HttpException,
   InternalServerErrorException,
   NotFoundException,
+  Delete,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -47,18 +48,22 @@ export class AuthService {
 
   async register(dto: signupDto) {
     try{
-    const { email, password, name } = dto;
+    const { email, password, name,role } = dto;
 
     if (!email || !password) {
       throw new BadRequestException('Email and password required');
     }
-
+    
     const exists = await this.prisma.user.findUnique({ where: { email } });
     if (exists) throw new ConflictException('User already exists');
 
     const hash = await bcrypt.hash(password, 10);
 
-    await this.redisService.set(`register-${email}`,JSON.stringify({data:{email,name,password}}),300)
+    
+
+    await this.redisService.set(`register-otp:${email}`,JSON.stringify({data:{email,name,password:hash,role}}),300)
+    // console.log("register-otp:",email)
+    await this.sendOtp(email)
     // await this.prisma.user.create({
     //   data: { email, password: hash, name ,role},
     // });
@@ -66,6 +71,7 @@ export class AuthService {
     return { message: 'Enter otp to verify' };
   }
   catch(error){
+    console.log(error)
     if(error instanceof BadRequestException||error)
       throw new InternalServerErrorException(error)
     }
@@ -81,8 +87,10 @@ export class AuthService {
     if (!user || !user.password || !password) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    console.log("before bcrypt=",password)
 
     const valid = await bcrypt.compare(password, user.password);
+    console.log("isvalid",valid)
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
     return {
@@ -281,7 +289,7 @@ return {
         throw new BadRequestException('Invalid email format');
       }
 
-      const registerKey = `register-${email}`;
+      const registerKey = `register-otp:${email}`;
       const blockKey = `otp-blocked-${email}`;
       const countKey = `otp-request-${email}`;
 
@@ -307,7 +315,7 @@ return {
         await this.redisService.del(countKey);
         throw new BadRequestException(
           'Too many OTP requests. Email blocked for 5 minutes.',
-        );
+        )
       }
 
       const otp = await this.emailService.sendOtpEmail(email);
@@ -316,30 +324,36 @@ return {
       if (error instanceof BadRequestException || error instanceof BadRequestException) {
         throw error;
       }
-
+      console.log("Ears=",error)
+      
       throw new InternalServerErrorException('Internal server error');
     }
   }
 
   async verifyOtp(email: string, otp: string) {
     try {
-
-      const isValid = await this.emailService.verifyOtp(email, otp);
       
+      const isValid = await this.emailService.verifyOtp(email, otp);
+        
       if (!isValid) {
         throw new BadRequestException('Invalid or expired OTP');
       }
-      const existData=await this.redisService.get(`register-${email}`)
-      console.log("json-parse",JSON.stringify(existData))
+      const existData=await this.redisService.get(`register-otp:${email}`)
+      console.log("json-parse",existData)
       if(existData){
-        const data=await this.prisma.user.create(JSON.parse(existData))
-        await this.redisService.del(`register-${email}`)
+        const data=JSON.parse(existData);
+        delete data['otp'];
+        console.log("data to insert==",data)
+        await this.prisma.user.create(data)
+        await this.redisService.del(`register-otp:${email}`)
         await this.redisService.del(`otp-request-${email}`)
         await this.redisService.del(`otp-blocked-${email}`)
       }
       
       return { message: 'OTP verified successfully' };
     } catch (error) {
+      console.log(error)
+      // console.log("error in caatch",error)
       if (error instanceof BadRequestException) {
         throw error;
       }

@@ -7,4 +7,18 @@ export class CardService {
   getCard() {
     return 'Get The Card';
   }
+
+  createCard({}){
+    
+    //cardtitle,card description,card status,cardid,
+    
+
+    return "card created"
+  }
+
+  updatecard({}){
+    //cardcomment,
+  }
 }
+
+

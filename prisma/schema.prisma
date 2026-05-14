@@ -8,29 +8,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum roleType{
-  DEVELOPER
-  CLIENT
-  MANAGER
-}
-
 model User {
-  id         String   @id @default(uuid())
-  email      String   @unique
-  password   String?
-  name       String?
-  createdAt  DateTime @default(now())
-
-  role       roleType @default(DEVELOPER)
-
-  // Auth (optional)
-  provider   String?
-  providerId String?
-
-  // Relations
-  clientProjects   Projects[] @relation("ClientProjects")
-  managedProjects  Projects[] @relation("ManagedProjects")
+  id               String        @id @default(uuid())
+  email            String        @unique
+  password         String?
+  name             String?
+  createdAt        DateTime      @default(now())
+  provider         String?
+  providerId       String?
+  role             roleType      @default(DEVELOPER)
   boardMemberships BoardMember[]
+  clientProjects   Projects[]    @relation("ClientProjects")
+  managedProjects  Projects[]    @relation("ManagedProjects")
 
   @@unique([provider, providerId])
 }
@@ -43,48 +32,50 @@ model Projects {
   createdAt         DateTime    @default(now())
   estimatedDuration String
   projectType       ProjectType
-
-  // ✅ RELATIONS ONLY (removed old fields)
   clientId          String?
-  client            User? @relation("ClientProjects", fields: [clientId], references: [id], onDelete: SetNull)
-
   projectManagerId  String?
-  manager           User? @relation("ManagedProjects", fields: [projectManagerId], references: [id], onDelete: SetNull)
-
   boards            Boards[]
+  client            User?       @relation("ClientProjects", fields: [clientId], references: [id])
+  manager           User?       @relation("ManagedProjects", fields: [projectManagerId], references: [id])
 
-  // ✅ Optional uniqueness (better than old one)
   @@unique([projectName, clientId])
 }
 
 model Boards {
-  boardId          String  @id @default(uuid())
+  boardId          String        @id @default(uuid())
   boardName        String
   boardDescription String?
-  createdAt        DateTime @default(now())
-
-  // ✅ RELATION ONLY (removed old assigner)
   projectId        String
-  project          Projects @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-
+  createdAt        DateTime      @default(now())
   members          BoardMember[]
+  project          Projects      @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
-  // Prevent duplicate board names in same project
   @@unique([boardName, projectId])
 }
 
 model BoardMember {
-  id       String @id @default(uuid())
-
-  userId   String
-  boardId  String
-  role     BoardRole
-  createdAt DateTime @default(now())
-
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  board    Boards @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
+  id        String    @id @default(uuid())
+  userId    String
+  boardId   String
+  role      BoardRole
+  createdAt DateTime  @default(now())
+  board     Boards    @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, boardId])
+}
+
+model Card {
+  cardId          String     @id @default(uuid())
+  cardTitle       String
+  cardDescription String
+  status          StatusType
+}
+
+enum roleType {
+  DEVELOPER
+  CLIENT
+  MANAGER
 }
 
 enum ProjectType {
@@ -96,4 +87,10 @@ enum BoardRole {
   ADMIN
   MEMBER
   VIEWER
+}
+
+enum StatusType {
+  PENDING
+  INPROGRESS
+  DONE
 }
