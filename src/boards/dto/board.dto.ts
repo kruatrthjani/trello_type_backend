@@ -1,15 +1,26 @@
-import { InputType, Field } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsNotEmpty, IsOptional } from 'class-validator';
+
+@ObjectType()
+export class BoardOutputDto {
+  @Field()
+  boardId: string;
+
+  @Field()
+  boardName: string;
+
+  @Field(() => String, { nullable: true })
+  boardDescription?: string | null;
+
+  @Field()
+  projectId: string;
+}
 
 @InputType()
 export class CreateBoardInput {
   @Field()
   @IsNotEmpty()
   name: string;
-
-  @Field()
-  @IsNotEmpty()
-  assigner: string;
 
   @Field()
   @IsNotEmpty()
@@ -25,10 +36,6 @@ export class UpdateBoardInput {
   @Field({ nullable: true })
   @IsOptional()
   name?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  assigner?: string;
 
   @Field({ nullable: true })
   @IsOptional()

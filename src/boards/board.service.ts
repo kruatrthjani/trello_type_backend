@@ -4,30 +4,40 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateBoardInput, UpdateBoardInput } from './dto/board.dto';
-import { NODATA } from 'node:dns';
+import {
+  BoardOutputDto,
+  CreateBoardInput,
+  UpdateBoardInput,
+} from './dto/board.dto';
 
 @Injectable()
 export class boardService {
   constructor(private readonly prismaservice: PrismaService) {}
 
-  //get all boards
-  async getAllBoards() {
-    const data = await this.prismaservice.boards.findMany({});
-    return data;
+  // get all boards
+  async getAllBoards(): Promise<BoardOutputDto[]> {
+    return this.prismaservice.boards.findMany({});
   }
 
-  async getBoard(id: string) {
+  async getBoard(id: string): Promise<BoardOutputDto> {
     const data = await this.prismaservice.boards.findUnique({
       where: {
         boardId: id,
       },
     });
+
+    if (!data) {
+      throw new NotFoundException('Board not found');
+    }
+
     return data;
   }
 
   // ✅ CREATE BOARD
-  async createBoard(data: CreateBoardInput, projectId: string) {
+  async createBoard(
+    data: CreateBoardInput,
+    projectId: string,
+  ): Promise<BoardOutputDto> {
     const existing = await this.prismaservice.boards.findFirst({
       where: { boardName: data.name, projectId },
     });
@@ -46,7 +56,7 @@ export class boardService {
   }
 
   // ✅ UPDATE BOARD
-  async updateBoard(data: UpdateBoardInput) {
+  async updateBoard(data: UpdateBoardInput): Promise<BoardOutputDto> {
     const existing = await this.prismaservice.boards.findUnique({
       where: { boardId: data.id },
     });
@@ -59,9 +69,6 @@ export class boardService {
       where: { boardId: data.id },
       data: {
         ...(data.name !== undefined && { boardName: data.name }),
-        ...(data.assigner !== undefined && {
-          boardAssigner: data.assigner,
-        }),
         ...(data.description !== undefined && {
           boardDescription: data.description,
         }),
@@ -69,7 +76,7 @@ export class boardService {
     });
   }
 
-  async deleteBoard(id: string) {
+  async deleteBoard(id: string): Promise<BoardOutputDto> {
     const data = await this.prismaservice.boards.findUnique({
       where: {
         boardId: id,
@@ -80,7 +87,7 @@ export class boardService {
       throw new NotFoundException("Data didn't exist");
     }
 
-    const response = await this.prismaservice.boards.delete({
+    return this.prismaservice.boards.delete({
       where: {
         boardId: id,
       },

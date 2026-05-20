@@ -8,9 +8,9 @@ export class Board {
   @Field()
   boardName: string;
 
-  @Field()
-  boardAssigner: string;
-
   @Field({ nullable: true })
   boardDescription?: string;
+
+  @Field()
+  projectId: string;
 }

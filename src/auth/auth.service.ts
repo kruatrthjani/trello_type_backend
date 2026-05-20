@@ -24,15 +24,16 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
     private readonly redisService:RedisService,
+
   ) {}
 
   /* ---------------- TOKEN HELPERS ---------------- */
 
-  private generateAccessToken(userId: string) {
+  private generateAccessToken({userId,userRole}) {
     return jwt.sign(
-      { sub: userId, type: 'access' },
+      { sub: userId, type: 'access',role:userRole },
       process.env.JWT_ACCESS_SECRET!,
-      { expiresIn: '5m' },
+      { expiresIn: '15m' },
     );
   }
 
@@ -90,11 +91,11 @@ export class AuthService {
     console.log("before bcrypt=",password)
 
     const valid = await bcrypt.compare(password, user.password);
-    console.log("isvalid",valid)
+   
     if (!valid) throw new UnauthorizedException('Invalid credentials');
-
+    console.log("user==",user)
     return {
-      accessToken: this.generateAccessToken(user.id),
+      accessToken: this.generateAccessToken({userId:user.id,userRole:user.role}),
       refreshToken: this.generateRefreshToken(user.id),
     };
   }
@@ -115,9 +116,9 @@ export class AuthService {
       if (payload.type !== 'refresh') {
         throw new UnauthorizedException({ code: 'INVALID_REFRESH_TOKEN' });
       }
-
+      const userData=await this.prisma.user.findUnique({where:{id:payload.sub}})
       return {
-        accessToken: this.generateAccessToken(payload.sub),
+        accessToken: this.generateAccessToken({userId:payload.sub,userRole:userData?.role}),
       };
     } catch {
       throw new HttpException(
@@ -129,51 +130,52 @@ export class AuthService {
 
   /* ---------------- SOCIAL LOGIN ---------------- */
 
-  async socialLogin(dto: socialDto) {
-    const { provider, code } = dto;
+  // async socialLogin(dto: socialDto) {
+  //   const { provider, code } = dto;
 
-    if (!provider || !code) {
-      throw new BadRequestException('Invalid social login payload');
-    }
+  //   if (!provider || !code) {
+  //     throw new BadRequestException('Invalid social login payload');
+  //   }
 
-    let profile: {
-      providerId: string;
-      email: string;
-      name?: string;
-    };
+  //   let profile: {
+  //     providerId: string;
+  //     email: string;
+  //     name?: string;
+  //   };
 
-    if (provider === 'google') {
-      profile = await this.verifyGoogle(code);
-    } else if (provider === 'github') {
-      profile = await this.verifyGithub(code);
-    } else {
-      throw new BadRequestException('Unsupported provider');
-    }
+  //   if (provider === 'google') {
+  //     profile = await this.verifyGoogle(code);
+  //   } else if (provider === 'github') {
+  //     profile = await this.verifyGithub(code);
+  //   } else {
+  //     throw new BadRequestException('Unsupported provider');
+  //   }
 
-    let user = await this.prisma.user.findFirst({
-      where: {
-        provider,
-        providerId: profile.providerId,
-      },
-    });
+  //   let user = await this.prisma.user.findFirst({
+  //     where: {
+  //       provider,
+  //       providerId: profile.providerId,
+  //     },
+  //   });
 
-    if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          provider,
-          providerId: profile.providerId,
-          email: profile.email,
-          name: profile.name ?? null,
-          password: null,
-        },
-      });
-    }
+  //   if (!user) {
+  //     user = await this.prisma.user.create({
+  //       data: {
+  //         provider,
+  //         providerId: profile.providerId,
+  //         email: profile.email,
+  //         name: profile.name ?? null,
+  //         password: null,
+  //       },
+  //     });
+  //   }
 
-    return {
-      accessToken: this.generateAccessToken(user.id),
-      refreshToken: this.generateRefreshToken(user.id),
-    };
-  }
+  //   const logged
+  //   return {
+  //     accessToken: this.generateAccessToken(user.id),
+  //     refreshToken: this.generateRefreshToken(user.id),
+  //   };
+  // }
 
   /* ---------------- GOOGLE ---------------- */
 

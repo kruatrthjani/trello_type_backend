@@ -1,5 +1,6 @@
+import { Field, ObjectType } from "@nestjs/graphql";
 import { IsEnum, IsNotEmpty, IsString } from "class-validator";
-
+import { registerEnumType } from "@nestjs/graphql";
 
 export enum sType {
     PENDING='pending',
@@ -7,11 +8,19 @@ export enum sType {
     DONE='done'
 }
 
+
+registerEnumType(sType, {
+  name: 'sType',
+});
+
+@ObjectType()
 export class CardDto{
+    @Field()
     @IsString()
     @IsNotEmpty()
     cardTitle:string;
 
+    @Field()
     @IsString()    
     @IsNotEmpty()
     cardDescription:string;
@@ -19,7 +28,7 @@ export class CardDto{
     // @IsString()
     // @IsNotEmpty()
     // cardId:string;
-
+    @Field(()=>sType)
     @IsEnum(sType)
     status:sType
 }
