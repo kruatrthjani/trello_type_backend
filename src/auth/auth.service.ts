@@ -88,12 +88,12 @@ export class AuthService {
     if (!user || !user.password || !password) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    console.log("before bcrypt=",password)
+    // console.log("before bcrypt=",password)
 
     const valid = await bcrypt.compare(password, user.password);
    
     if (!valid) throw new UnauthorizedException('Invalid credentials');
-    console.log("user==",user)
+    // console.log("user==",user)
     return {
       accessToken: this.generateAccessToken({userId:user.id,userRole:user.role}),
       refreshToken: this.generateRefreshToken(user.id),
