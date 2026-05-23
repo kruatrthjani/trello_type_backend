@@ -28,19 +28,20 @@ export class ProjectDto {
   @IsNotEmpty()
   readonly projectType: Ptype;
 
-  @ValidateIf((o) => o.projectType === Ptype.CLIENT)
-  @IsString()
-  @IsNotEmpty()
-  readonly clientName?: string;
+  // @ValidateIf((o) => o.projectType === Ptype.CLIENT)
+  // @IsString()
+  // @IsNotEmpty()
+  // readonly clientName?: string;
 
   @IsString()
   @IsNotEmpty()
-  readonly projectManager: string;
+  readonly projectManagerId?: string;
 
   @IsString()
   @IsNotEmpty()
   readonly estimatedDuration: string;
 
+  @ValidateIf((o) => o.projectType === Ptype.CLIENT)
   @IsString()
   @IsOptional()
   readonly clientId?: string;

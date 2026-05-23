@@ -29,7 +29,7 @@ export class BoardMemberService {
 
       return board.members;
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException(error);
     }
   }
 

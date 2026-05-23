@@ -31,13 +31,14 @@ export class ProjectService {
       if (founded) {
         throw new ConflictException('Project already exist');
       }
-      return await this.prisma.projects.create({
+      const data= await this.prisma.projects.create({
         data: {
           ...obj,
           // Assign based on user role - will need user info
           projectManagerId: userId,
         },
       });
+      return {data,message:"Project created successfully"}
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -53,7 +54,7 @@ export class ProjectService {
       const project = await this.prisma.projects.findUnique({
         where: { projectId },
       });
-
+console.log("userId=",userId)
       if (!project) {
         throw new NotFoundException('Project not found');
       }
@@ -68,10 +69,11 @@ export class ProjectService {
         );
       }
 
-      return await this.prisma.projects.update({
+      const data= await this.prisma.projects.update({
         where: { projectId },
         data: dto,
       });
+      return {message:"Project updated successfully",data}
     } catch (error) {
       if (error instanceof ForbiddenException) {
         throw error;
@@ -90,6 +92,7 @@ export class ProjectService {
       if (!project) {
         throw new NotFoundException('Project not found');
       }
+      
 
       // Verify user is the manager or client of the project
       const isAuthorized =
@@ -101,9 +104,10 @@ export class ProjectService {
         );
       }
 
-      return await this.prisma.projects.delete({
+      const data = await this.prisma.projects.delete({
         where: { projectId },
       });
+      return {message:"Project deleted Successfully",data}
     } catch (error) {
       if (error instanceof ForbiddenException) {
         throw error;

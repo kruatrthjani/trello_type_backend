@@ -28,7 +28,8 @@ export class ProjectController {
   @Post('create')
   @Roles('MANAGER', 'CLIENT')
   createProject(@Body() projectDto: ProjectDto, @Req() req: any) {
-    const userId = req.user.id;
+ 
+    const userId = req.user.sub;
     return this.projectService.createProject(projectDto, userId);
   }
 
@@ -39,7 +40,8 @@ export class ProjectController {
     @Body() updateProjectDto: UpdateProjectDto,
     @Req() req: any,
   ) {
-    const userId = req.user.id;
+    const userId = req.user.sub;
+    console.log("controller userID=",userId)
     return this.projectService.updateProject(
       projectId,
       updateProjectDto,
@@ -50,7 +52,7 @@ export class ProjectController {
   @Delete('delete/:id')
   @Roles('MANAGER', 'CLIENT')
   deleteProject(@Param('id') id: string, @Req() req: any) {
-    const userId = req.user.id;
+    const userId = req.user.sub;
     return this.projectService.deleteProject(id, userId);
   }
 }
