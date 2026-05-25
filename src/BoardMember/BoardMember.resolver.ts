@@ -21,10 +21,10 @@ export class BoardMemberController {
   @Mutation(() => BoardMemberClass)
   CreateBoardMember(
     @Args('boardId') boardId: string,
-    @Args('role', { type: () => RoleType }) role: RoleType,
+    // @Args('role', { type: () => RoleType }) role: RoleType,
     @Args('userId') userId: string,
   ) {
-    return this.boardmemberservice.createBoardMember({ boardId, role, userId });
+    return this.boardmemberservice.createBoardMember({ boardId, userId });
   }
 
   @Roles('CLIENT')
@@ -44,6 +44,6 @@ export class BoardMemberController {
     @Args('role', { type: () => RoleType }) role: RoleType,
     @Args('userId') userId: string,
   ) {
-    return this.boardmemberservice.deleteBoardMember({ boardId, userId });
+    return this.boardmemberservice.updateBoardMember({ boardId, userId,role });
   }
 }

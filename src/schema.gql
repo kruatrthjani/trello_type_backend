@@ -19,6 +19,7 @@ enum RoleType {
   ADMIN
   MEMBER
   VIEWER
+  CLIENT
 }
 
 type Query {
@@ -33,7 +34,7 @@ type Mutation {
   createBoard(data: CreateBoardInput!, projectId: String!): Board!
   updateBoard(data: UpdateBoardInput!): Board!
   deleteBoard(id: String!): Board!
-  CreateBoardMember(boardId: String!, role: RoleType!, userId: String!): BoardMemberClass!
+  CreateBoardMember(boardId: String!, userId: String!): BoardMemberClass!
   DeleteMember(boardId: String!, userId: String!): BoardMemberClass!
   UpdateMember(boardId: String!, role: RoleType!, userId: String!): BoardMemberClass!
 }

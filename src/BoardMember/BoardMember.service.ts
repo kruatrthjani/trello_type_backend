@@ -36,7 +36,6 @@ export class BoardMemberService {
   async createBoardMember(data: {
     boardId: string;
     userId: string;
-    role: $Enums.BoardRole;
   }) {
     try {
       // ✅ Check board exists
@@ -76,7 +75,7 @@ export class BoardMemberService {
         data,
       });
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -133,7 +132,7 @@ export class BoardMemberService {
             boardId: data.boardId,
           },
         },
-        data: { role: data.role },
+        data: { userId: data.userId },
       });
       return updatedata;
     } catch (error) {

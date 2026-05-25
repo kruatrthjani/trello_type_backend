@@ -41,7 +41,7 @@ export class ProjectController {
     @Req() req: any,
   ) {
     const userId = req.user.sub;
-    console.log("controller userID=",userId)
+    // console.log("controller userID=",userId)
     return this.projectService.updateProject(
       projectId,
       updateProjectDto,
