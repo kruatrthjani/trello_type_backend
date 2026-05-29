@@ -106,35 +106,26 @@ export class BoardMemberService {
   }
 
   async updateBoardMember(data: {
-    boardId: string;
+    id: string;
     userId: string;
-    role: $Enums.BoardRole;
+    // role: $Enums.BoardRole;
   }) {
     try {
-      const findData = await this.prismaService.boardMember.findUnique({
-        where: {
-          userId_boardId: {
-            userId: data.userId,
-            boardId: data.boardId,
-          },
-        },
-      });
-      if (!findData) {
-        throw new NotFoundException(
-          'Cannot find appropriate boardId with userId',
-        );
+      const finding=await this.prismaService.boardMember.findUnique({where:{
+        id:data.id,
+      }})
+
+      if(!finding){
+        throw new  NotFoundException("Board-Member Id not found")
       }
 
-      const updatedata = await this.prismaService.boardMember.update({
-        where: {
-          userId_boardId: {
-            userId: data.userId,
-            boardId: data.boardId,
-          },
-        },
-        data: { userId: data.userId },
-      });
-      return updatedata;
+      const findUser=await this.prismaService.user.findUnique({where:{id:data.userId}})
+      if(!findUser){
+        throw new NotFoundException("No user found")
+      }
+
+      const updateUser=await this.prismaService.boardMember.update({where:{id:data.id},data:{userId:data.userId}})
+      return {message:"User updated successfully",data:updateUser};
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { BoardMemberService } from './BoardMember.service';
-import { BoardMemberClass } from './entity/BoardMember';
+import { BoardMemberClass, UpdateBoardMemberResponse } from './entity/BoardMember';
 import { RoleType } from './entity/BoardMember';
 import { Roles } from 'src/auth/roles.decorator';
 import { UseGuards } from '@nestjs/common';
@@ -38,12 +38,12 @@ export class BoardMemberController {
   }
 
   @Roles('CLIENT')
-  @Mutation(() => BoardMemberClass)
+  @Mutation(() => UpdateBoardMemberResponse)
   UpdateMember(
-    @Args('boardId') boardId: string,
-    @Args('role', { type: () => RoleType }) role: RoleType,
+    @Args('id') id: string,
+    // @Args('role', { type: () => RoleType }) role: RoleType,
     @Args('userId') userId: string,
   ) {
-    return this.boardmemberservice.updateBoardMember({ boardId, userId,role });
+    return this.boardmemberservice.updateBoardMember({ id, userId });
   }
 }

@@ -14,11 +14,21 @@ registerEnumType(RoleType, {
 @ObjectType()
 export class BoardMemberClass {
   @Field()
-  boardId: string;
+  id: string;
 
   @Field()
   userId: string;
 
-  @Field(() => RoleType)
-  role: RoleType;
+  // @Field(() => RoleType)
+  // role: RoleType;
+}
+
+
+@ObjectType()
+export class UpdateBoardMemberResponse {
+  @Field()
+  message: string;
+
+  @Field(() => BoardMemberClass)
+  data: BoardMemberClass;
 }
