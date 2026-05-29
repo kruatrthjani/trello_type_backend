@@ -8,7 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class BoardMemberService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) { }
 
   async getBoardMember(boardId: string) {
     try {
@@ -27,7 +27,7 @@ export class BoardMemberService {
         throw new NotFoundException('Board does not exist');
       }
 
-      return board.members;
+      return {message:"all board members",data:board};
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -71,37 +71,32 @@ export class BoardMemberService {
       }
 
       // ✅ Create member
-      return await this.prismaService.boardMember.create({
+      const created= await this.prismaService.boardMember.create({
         data,
       });
+      return{message:"BoardMEmber created successfully",data:{id:created.id,userId:created.userId}}
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      
+      throw error
     }
   }
 
-  async deleteBoardMember(data: { boardId: string; userId: string }) {
+  async deleteBoardMember(id: string) {
     try {
       const board = await this.prismaService.boardMember.findUnique({
         where: {
-          userId_boardId: {
-            userId: data.userId,
-            boardId: data.boardId,
-          },
+          id
         },
       });
       if (!board) {
         throw new NotFoundException('Member with this board is not found');
       }
-      return await this.prismaService.boardMember.delete({
-        where: {
-          userId_boardId: {
-            userId: data.userId,
-            boardId: data.boardId,
-          },
-        },
+      const deleted = await this.prismaService.boardMember.delete({
+        where: { id },
       });
+      return { message: "BoardID deleted successfully", data: deleted }
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -111,21 +106,37 @@ export class BoardMemberService {
     // role: $Enums.BoardRole;
   }) {
     try {
-      const finding=await this.prismaService.boardMember.findUnique({where:{
-        id:data.id,
-      }})
+      const finding = await this.prismaService.boardMember.findUnique({
+        where: {
+          id: data.id,
+        }
+      })
 
-      if(!finding){
-        throw new  NotFoundException("Board-Member Id not found")
+      if (!finding) {
+        throw new NotFoundException("Board-Member Id not found")
       }
 
-      const findUser=await this.prismaService.user.findUnique({where:{id:data.userId}})
-      if(!findUser){
+      if (finding) {
+        const existing = await this.prismaService.boardMember.findUnique({
+          where: {
+            userId_boardId: {
+              userId: data.userId,
+              boardId: finding.boardId,
+            },
+          },
+        });
+
+        if (existing) {
+          throw new NotFoundException('User already a member of this board');
+        }
+      }
+      const findUser = await this.prismaService.user.findUnique({ where: { id: data.userId } })
+      if (!findUser) {
         throw new NotFoundException("No user found")
       }
 
-      const updateUser=await this.prismaService.boardMember.update({where:{id:data.id},data:{userId:data.userId}})
-      return {message:"User updated successfully",data:updateUser};
+      const updateUser = await this.prismaService.boardMember.update({ where: { id: data.id }, data: { userId: data.userId } })
+      return { message: "User updated successfully", data: updateUser };
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { BoardMemberService } from './BoardMember.service';
-import { BoardMemberClass, UpdateBoardMemberResponse } from './entity/BoardMember';
+import { BoardMemberClass, BoardMemberResponse, GetBoardMembersResponse } from './entity/BoardMember';
 import { RoleType } from './entity/BoardMember';
 import { Roles } from 'src/auth/roles.decorator';
 import { UseGuards } from '@nestjs/common';
@@ -12,13 +12,13 @@ import { RolesGuard } from 'src/auth/roles.guard';
 export class BoardMemberController {
   constructor(private readonly boardmemberservice: BoardMemberService) {}
 
-  @Query(() => BoardMemberClass)
+  @Query(() => GetBoardMembersResponse)
   BoardMember(@Args('boardId') boardId: string) {
     return this.boardmemberservice.getBoardMember(boardId);
   }
 
   @Roles('CLIENT')
-  @Mutation(() => BoardMemberClass)
+  @Mutation(() => BoardMemberResponse)
   CreateBoardMember(
     @Args('boardId') boardId: string,
     // @Args('role', { type: () => RoleType }) role: RoleType,
@@ -28,17 +28,17 @@ export class BoardMemberController {
   }
 
   @Roles('CLIENT')
-  @Mutation(() => BoardMemberClass)
-  DeleteMember(
-    @Args('boardId') boardId: string,
+  @Mutation(() => BoardMemberResponse)
+  DeleteBoardMember(
+    @Args('id') id: string,
     // @Args('role',{type:()=>RoleType}) role:RoleType,
-    @Args('userId') userId: string,
+    // @Args('userId') userId: string,
   ) {
-    return this.boardmemberservice.deleteBoardMember({ boardId, userId });
+    return this.boardmemberservice.deleteBoardMember(id);
   }
 
   @Roles('CLIENT')
-  @Mutation(() => UpdateBoardMemberResponse)
+  @Mutation(() => BoardMemberResponse)
   UpdateMember(
     @Args('id') id: string,
     // @Args('role', { type: () => RoleType }) role: RoleType,

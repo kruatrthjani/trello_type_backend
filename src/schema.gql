@@ -9,12 +9,22 @@ type Board {
   projectId: String!
 }
 
+type BoardClass {
+  boardId: String!
+  members: [BoardMemberClass!]!
+}
+
 type BoardMemberClass {
   id: String!
   userId: String!
 }
 
-type UpdateBoardMemberResponse {
+type GetBoardMembersResponse {
+  message: String!
+  data: BoardClass!
+}
+
+type BoardMemberResponse {
   message: String!
   data: BoardMemberClass!
 }
@@ -23,7 +33,7 @@ type Query {
   hello: String!
   getAllBoard: [Board!]!
   getBoard(id: String!): Board!
-  BoardMember(boardId: String!): BoardMemberClass!
+  BoardMember(boardId: String!): GetBoardMembersResponse!
   getCard: String!
 }
 
@@ -31,9 +41,9 @@ type Mutation {
   createBoard(data: CreateBoardInput!, projectId: String!): Board!
   updateBoard(data: UpdateBoardInput!): Board!
   deleteBoard(id: String!): Board!
-  CreateBoardMember(boardId: String!, userId: String!): BoardMemberClass!
-  DeleteMember(boardId: String!, userId: String!): BoardMemberClass!
-  UpdateMember(id: String!, userId: String!): UpdateBoardMemberResponse!
+  CreateBoardMember(boardId: String!, userId: String!): BoardMemberResponse!
+  DeleteBoardMember(id: String!): BoardMemberResponse!
+  UpdateMember(id: String!, userId: String!): BoardMemberResponse!
 }
 
 input CreateBoardInput {

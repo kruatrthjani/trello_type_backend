@@ -11,6 +11,19 @@ registerEnumType(RoleType, {
   name: 'RoleType',
 });
 
+
+
+@ObjectType()
+export class BoardClass {
+
+  @Field()
+  boardId: string;
+
+  @Field(() => [BoardMemberClass])
+  members: BoardMemberClass[];
+}
+
+
 @ObjectType()
 export class BoardMemberClass {
   @Field()
@@ -23,9 +36,18 @@ export class BoardMemberClass {
   // role: RoleType;
 }
 
+@ObjectType()
+export class GetBoardMembersResponse {
+
+  @Field()
+  message: string;
+
+  @Field(() => BoardClass)
+  data: BoardClass;
+}
 
 @ObjectType()
-export class UpdateBoardMemberResponse {
+export class BoardMemberResponse {
   @Field()
   message: string;
 
