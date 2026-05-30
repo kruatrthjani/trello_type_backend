@@ -48,9 +48,11 @@ export class JwtAccessGuard implements CanActivate {
       request.user = payload;
       return true;
     } catch (err: any) {
+      console.log("what is error=",err.name)
       if (err.name === 'TokenExpiredError') {
         throw new UnauthorizedException({
           code: 'ACCESS_TOKEN_EXPIRED',
+          statusCode: 401,
         });
       }
 

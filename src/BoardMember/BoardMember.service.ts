@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { roleType, $Enums } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -67,7 +68,7 @@ export class BoardMemberService {
       });
 
       if (existing) {
-        throw new NotFoundException('User already a member of this board');
+        throw new ConflictException('User already a member of this board');
       }
 
       // ✅ Create member
@@ -77,7 +78,7 @@ export class BoardMemberService {
       return{message:"BoardMEmber created successfully",data:{id:created.id,userId:created.userId}}
     } catch (error) {
       
-      throw error
+      throw new InternalServerErrorException("Server error")
     }
   }
 

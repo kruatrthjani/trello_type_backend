@@ -24,6 +24,15 @@ import { RedisModule } from './redis/redis.module';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: true,
+      formatError: (error) => {
+        const originalError = error.extensions?.originalError as any;
+        // console.log("original error=",error)
+        return {
+          message: error.message,
+          statusCode: originalError?.statusCode,
+          code: originalError?.code,
+        };
+      },
     }),
 
     PrismaModule,
@@ -43,4 +52,4 @@ import { RedisModule } from './redis/redis.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
