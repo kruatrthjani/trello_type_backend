@@ -29,6 +29,19 @@ type BoardMemberResponse {
   data: BoardMemberClass!
 }
 
+type CardDto {
+  cardTitle: String!
+  cardDescription: String!
+  cardImage: String!
+  status: sType!
+}
+
+enum sType {
+  PENDING
+  INPROGRESS
+  DONE
+}
+
 type Query {
   hello: String!
   getAllBoard: [Board!]!
@@ -44,6 +57,7 @@ type Mutation {
   CreateBoardMember(boardId: String!, userId: String!): BoardMemberResponse!
   DeleteBoardMember(id: String!): BoardMemberResponse!
   UpdateMember(id: String!, userId: String!): BoardMemberResponse!
+  createCard(data: CardInputDto!): CardDto!
 }
 
 input CreateBoardInput {
@@ -55,4 +69,10 @@ input UpdateBoardInput {
   id: String!
   name: String
   description: String
+}
+
+input CardInputDto {
+  cardTitle: String!
+  cardDescription: String!
+  cardImage: String
 }

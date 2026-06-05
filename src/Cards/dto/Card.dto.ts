@@ -1,5 +1,5 @@
-import { Field, ObjectType } from "@nestjs/graphql";
-import { IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { Field, InputType, ObjectType } from "@nestjs/graphql";
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { registerEnumType } from "@nestjs/graphql";
 
 export enum sType {
@@ -13,6 +13,27 @@ registerEnumType(sType, {
   name: 'sType',
 });
 
+@InputType()
+export class CardInputDto{
+    @Field()
+    @IsString()
+    @IsNotEmpty()
+    cardTitle:string;
+
+    @Field()
+    @IsString()
+    @IsNotEmpty()
+    cardDescription:string;
+
+    @Field({nullable:true})
+    @IsString()
+    @IsOptional()
+    cardImage?:Base64URLString;
+}
+
+
+
+
 @ObjectType()
 export class CardDto{
     @Field()
@@ -24,6 +45,11 @@ export class CardDto{
     @IsString()    
     @IsNotEmpty()
     cardDescription:string;
+
+    @Field()
+    @IsString()
+    @IsOptional()
+    cardImage?:string;
 
     // @IsString()
     // @IsNotEmpty()

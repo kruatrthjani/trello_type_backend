@@ -54,12 +54,12 @@ model Boards {
 }
 
 model BoardMember {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String
   boardId   String
-  createdAt DateTime  @default(now())
-  board     Boards    @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  board     Boards   @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, boardId])
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CardDto } from './dto/Card.dto';
+import { CardDto, CardInputDto } from './dto/Card.dto';
 
 @Injectable()
 export class CardService {
@@ -9,12 +9,13 @@ export class CardService {
     return 'Get The Card';
   }
 
-  createCard(cardDto:CardDto){
-    console.log("cardfro=",cardDto)
-    //cardtitle,card description,card status,cardid,
+  createCard(cardInputDto:CardInputDto){
     
+    //cardtitle,card description,card status,cardid,
+    const data=cardInputDto;
+    console.log("cardInputDto=",cardInputDto)
 
-    return cardDto;
+    return cardInputDto;
   }
 
   updatecard({}){
