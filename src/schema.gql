@@ -30,13 +30,14 @@ type BoardMemberResponse {
 }
 
 type CardDto {
+  cardId: String!
   cardTitle: String!
   cardDescription: String!
-  cardImage: String!
-  status: sType!
+  cardImage: String
+  status: StatusType!
 }
 
-enum sType {
+enum StatusType {
   PENDING
   INPROGRESS
   DONE
@@ -47,7 +48,9 @@ type Query {
   getAllBoard: [Board!]!
   getBoard(id: String!): Board!
   BoardMember(boardId: String!): GetBoardMembersResponse!
-  getCard: String!
+  getCards: [CardDto!]!
+  getCard(id: String!): CardDto!
+  DeleteCard(id: String!): CardDto!
 }
 
 type Mutation {
@@ -58,6 +61,7 @@ type Mutation {
   DeleteBoardMember(id: String!): BoardMemberResponse!
   UpdateMember(id: String!, userId: String!): BoardMemberResponse!
   createCard(data: CardInputDto!): CardDto!
+  updateCard(id: String!, data: CardUpdateInputDto!): CardDto!
 }
 
 input CreateBoardInput {
@@ -75,4 +79,11 @@ input CardInputDto {
   cardTitle: String!
   cardDescription: String!
   cardImage: String
+}
+
+input CardUpdateInputDto {
+  cardTitle: String
+  cardDescription: String
+  cardImage: String
+  status: StatusType
 }

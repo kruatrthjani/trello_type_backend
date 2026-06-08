@@ -1,60 +1,77 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql";
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { registerEnumType } from "@nestjs/graphql";
+import { StatusType } from "@prisma/client";
 
-export enum sType {
-    PENDING='pending',
-    INPROGRESS='inprogress',
-    DONE='done'
-}
+// export enum sType {
+//     PENDING,
+//     INPROGRESS,
+//     DONE
+// }
 
 
-registerEnumType(sType, {
-  name: 'sType',
+
+
+registerEnumType(StatusType, {
+    name: 'StatusType',
 });
 
 @InputType()
-export class CardInputDto{
+export class CardInputDto {
     @Field()
     @IsString()
     @IsNotEmpty()
-    cardTitle:string;
+    cardTitle!: string;
 
     @Field()
     @IsString()
     @IsNotEmpty()
-    cardDescription:string;
+    cardDescription!: string;
 
-    @Field({nullable:true})
+    @Field({ nullable: true })
     @IsString()
     @IsOptional()
-    cardImage?:Base64URLString;
+    cardImage?: string;
+}
+
+@InputType()
+export class CardUpdateInputDto {
+    @Field({ nullable: true })
+    @IsString()
+    @IsOptional()
+    cardTitle?: string;
+
+    @Field({ nullable: true })
+    @IsString()
+    @IsOptional()
+    cardDescription?: string;
+
+    @Field({ nullable: true })
+    @IsString()
+    @IsOptional()
+    cardImage?: string;
+
+    @Field(() => StatusType, { nullable: true })
+    @IsEnum(StatusType)
+    @IsOptional()
+    status?: StatusType;
 }
 
 
-
-
 @ObjectType()
-export class CardDto{
-    @Field()
-    @IsString()
-    @IsNotEmpty()
-    cardTitle:string;
+export class CardDto {
+  @Field()
+  cardId!: string;
 
-    @Field()
-    @IsString()    
-    @IsNotEmpty()
-    cardDescription:string;
+  @Field()
+  cardTitle!: string;
 
-    @Field()
-    @IsString()
-    @IsOptional()
-    cardImage?:string;
+  @Field()
+  cardDescription!: string;
 
-    // @IsString()
-    // @IsNotEmpty()
-    // cardId:string;
-    @Field(()=>sType)
-    @IsEnum(sType)
-    status:sType
+  @Field({ nullable: true })
+  cardImage?: string;
+
+  @Field(() => StatusType)
+  status!: StatusType;
 }

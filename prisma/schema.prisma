@@ -68,7 +68,8 @@ model Card {
   cardId          String     @id @default(uuid())
   cardTitle       String
   cardDescription String
-  status          StatusType
+  cardImage       String?
+  status          StatusType @default(PENDING)
 }
 
 enum roleType {
