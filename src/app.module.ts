@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -24,9 +25,12 @@ import { RedisModule } from './redis/redis.module';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: true,
+      csrfPrevention: false,
+      context: ({ req }) => ({ req }),
+      resolvers: { Upload: GraphQLUpload },
       formatError: (error) => {
-        const originalError = error.extensions?.originalError as any;
-        // console.log("original error=",error)
+        const originalError = error.extensions?.originalError as { statusCode?: number; code?: string } | undefined;
+
         return {
           message: error.message,
           statusCode: originalError?.statusCode,
@@ -52,4 +56,5 @@ import { RedisModule } from './redis/redis.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}
+

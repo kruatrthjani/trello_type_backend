@@ -1,62 +1,51 @@
-import { Field, InputType, ObjectType } from "@nestjs/graphql";
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { registerEnumType } from "@nestjs/graphql";
-import { StatusType } from "@prisma/client";
-
-// export enum sType {
-//     PENDING,
-//     INPROGRESS,
-//     DONE
-// }
-
-
-
+import { Field, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { StatusType } from '@prisma/client';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { FileUpload } from 'graphql-upload';
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 
 registerEnumType(StatusType, {
-    name: 'StatusType',
+  name: 'StatusType',
 });
 
 @InputType()
 export class CardInputDto {
-    @Field()
-    @IsString()
-    @IsNotEmpty()
-    cardTitle!: string;
+  @Field()
+  @IsString()
+  @IsNotEmpty()
+  cardTitle!: string;
 
-    @Field()
-    @IsString()
-    @IsNotEmpty()
-    cardDescription!: string;
+  @Field()
+  @IsString()
+  @IsNotEmpty()
+  cardDescription!: string;
 
-    @Field({ nullable: true })
-    @IsString()
-    @IsOptional()
-    cardImage?: string;
+  @Field(() => GraphQLUpload, { nullable: true })
+  @IsOptional()
+  cardImage?: Promise<FileUpload> | null;
 }
 
 @InputType()
 export class CardUpdateInputDto {
-    @Field({ nullable: true })
-    @IsString()
-    @IsOptional()
-    cardTitle?: string;
+  @Field({ nullable: true })
+  @IsString()
+  @IsOptional()
+  cardTitle?: string;
 
-    @Field({ nullable: true })
-    @IsString()
-    @IsOptional()
-    cardDescription?: string;
+  @Field({ nullable: true })
+  @IsString()
+  @IsOptional()
+  cardDescription?: string;
 
-    @Field({ nullable: true })
-    @IsString()
-    @IsOptional()
-    cardImage?: string;
+  @Field(() => GraphQLUpload, { nullable: true })
+  @IsOptional()
+  cardImage?: Promise<FileUpload> | null;
 
-    @Field(() => StatusType, { nullable: true })
-    @IsEnum(StatusType)
-    @IsOptional()
-    status?: StatusType;
+  @Field(() => StatusType, { nullable: true })
+  @IsEnum(StatusType)
+  @IsOptional()
+  status?: StatusType;
 }
-
 
 @ObjectType()
 export class CardDto {
