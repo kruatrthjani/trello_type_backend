@@ -34,7 +34,7 @@ export class CardService {
 
     return cards;
   }
-
+   
   async createCard(cardInputDto: CardInputDto) {
     let imageUrl: string | undefined;
 
@@ -56,7 +56,7 @@ export class CardService {
       imageUrl = await this.cloudinaryService.uploadImage(file);
     }
 
-    console.log('createCard service imageUrl:', imageUrl);
+   
 
     return this.prismaservice.card.create({
       data: {
@@ -95,6 +95,20 @@ export class CardService {
         cardId: id,
       },
       data: updateData,
+    });
+  }
+
+  
+  async updateCardStatus(id: string, status:StatusType) {
+    await this.getCard(id);
+    
+    return this.prismaservice.card.update({
+      where: {
+        cardId: id,
+      },
+      data:{
+         status: status,
+      }
     });
   }
 

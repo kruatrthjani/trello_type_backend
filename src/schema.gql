@@ -62,6 +62,7 @@ type Mutation {
   UpdateMember(id: String!, userId: String!): BoardMemberResponse!
   createCard(data: CardInputDto!): CardDto!
   updateCard(id: String!, data: CardUpdateInputDto!): CardDto!
+  updateCardStatus(id: String!, status: StatusType!): CardDto!
 }
 
 input CreateBoardInput {

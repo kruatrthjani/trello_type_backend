@@ -48,6 +48,7 @@ model Boards {
   projectId        String
   createdAt        DateTime      @default(now())
   members          BoardMember[]
+  cards            Card[]
   project          Projects      @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
   @@unique([boardName, projectId])
@@ -70,6 +71,8 @@ model Card {
   cardDescription String
   cardImage       String?
   status          StatusType @default(PENDING)
+  boardId         String
+  board           Boards     @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
 }
 
 enum roleType {
