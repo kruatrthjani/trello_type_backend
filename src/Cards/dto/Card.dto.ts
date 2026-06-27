@@ -23,6 +23,11 @@ export class CardInputDto {
   @Field(() => GraphQLUpload, { nullable: true })
   @IsOptional()
   cardImage?: Promise<FileUpload> | null;
+
+  @Field()
+  @IsString()
+  @IsNotEmpty()
+  boardId:string;
 }
 
 @InputType()
@@ -45,6 +50,11 @@ export class CardUpdateInputDto {
   @IsEnum(StatusType)
   @IsOptional()
   status?: StatusType;
+
+  
+  @Field()
+  @IsString()
+  boardId:string;  
 }
 
 @ObjectType()
@@ -63,4 +73,7 @@ export class CardDto {
 
   @Field(() => StatusType)
   status!: StatusType;
+
+  @Field()
+  boardId:string;
 }

@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, StatusType } from '@prisma/client';
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Prisma, StatusType, roleType } from '@prisma/client';
 import { CloudinaryService } from 'src/Cloudinary/cloudinary.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CardInputDto, CardUpdateInputDto } from './dto/Card.dto';
@@ -11,7 +11,33 @@ export class CardService {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async getCard(id: string) {
+  async hasPermission(id:string,userId?:string){
+      const cardData= await this.prismaservice.card.findUnique({where:{cardId:id}})
+      if(!cardData ||!cardData.cardTitle){
+          throw new NotFoundException("No card exist")
+      }
+
+      const boardMembers = await this.prismaservice.boardMember.findMany({where:{boardId:cardData.boardId}})
+      if(boardMembers.length<1){
+        throw new NotFoundException("No user found as board member");
+      }
+      const findUser= boardMembers.find((data)=>data.userId==userId)
+      
+      if(!findUser){
+          throw new UnauthorizedException("Current user dont have access to this board");
+      }
+
+      const data = await this.prismaservice.user.findUnique({where:{id:userId}})
+
+      return data;
+  }
+
+  async getCard(id: string, userId?: string | { sub?: string }) {
+    const normalizedUserId = typeof userId === 'string' ? userId : userId?.sub;
+    const response = await this.hasPermission(id, normalizedUserId);
+    if (!response) {
+      throw new UnauthorizedException('Access denied to user');
+    }
     const data = await this.prismaservice.card.findUnique({
       where: {
         cardId: id,
@@ -21,7 +47,6 @@ export class CardService {
     if (!data) {
       throw new NotFoundException('No card exists with this id');
     }
-
     return data;
   }
 
@@ -37,40 +62,36 @@ export class CardService {
    
   async createCard(cardInputDto: CardInputDto) {
     let imageUrl: string | undefined;
-
-    console.log('createCard service received cardInputDto:', {
-      cardTitle: cardInputDto.cardTitle,
-      cardDescription: cardInputDto.cardDescription,
-      cardImagePresent: !!cardInputDto.cardImage,
-      cardImageType: cardInputDto.cardImage ? typeof cardInputDto.cardImage : 'undefined',
-    });
-
+    
     if (cardInputDto.cardImage) {
-      console.log('createCard service awaiting cardImage promise');
       const file = await cardInputDto.cardImage;
-      console.log('createCard service received file upload:', {
-        filename: file.filename,
-        mimetype: file.mimetype,
-        encoding: file.encoding,
-      });
+      
       imageUrl = await this.cloudinaryService.uploadImage(file);
     }
 
-   
-
+   const findBoardId= await this.prismaservice.boards.findUnique({where:{boardId:cardInputDto.boardId}})
+   if(!findBoardId){
+      throw new NotFoundException("No relevent boardId found")
+   }
     return this.prismaservice.card.create({
       data: {
         cardTitle: cardInputDto.cardTitle,
         cardDescription: cardInputDto.cardDescription,
         cardImage: imageUrl,
         status: StatusType.PENDING,
+        boardId:cardInputDto.boardId,
       },
     });
   }
 
-  async updatecard(id: string, data: CardUpdateInputDto) {
+  async updatecard(id: string, data: CardUpdateInputDto,userId:string) {
     await this.getCard(id);
+    const user = await this.hasPermission(id,userId);
+    if(!user){
+        throw new NotFoundException("No user found")
+    }
 
+    
     const updateData: Prisma.CardUpdateInput = {};
 
     if (data.cardTitle !== undefined) {
@@ -99,9 +120,15 @@ export class CardService {
   }
 
   
-  async updateCardStatus(id: string, status:StatusType) {
-    await this.getCard(id);
-    
+  async updateCardStatus(id: string, userId: string, status: StatusType) {
+    const data = await this.hasPermission(id, userId);
+ 
+    if (!data) {
+      throw new NotFoundException('User not found');
+    }
+    if (data.role !== roleType.CLIENT && status === StatusType.DONE) {
+      throw new ForbiddenException('No access for this status');
+    }
     return this.prismaservice.card.update({
       where: {
         cardId: id,
@@ -112,9 +139,12 @@ export class CardService {
     });
   }
 
-  async deleteCard(id: string) {
+  async deleteCard(id: string,userId:string) {
+    const user = await this.hasPermission(id,userId);
+    if(!user){
+      throw new NotFoundException("No user found")
+    }
     await this.getCard(id);
-
     return this.prismaservice.card.delete({ where: { cardId: id } });
   }
 }

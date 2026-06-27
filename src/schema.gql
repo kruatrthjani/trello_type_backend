@@ -35,6 +35,7 @@ type CardDto {
   cardDescription: String!
   cardImage: String
   status: StatusType!
+  boardId: String!
 }
 
 enum StatusType {
@@ -80,6 +81,7 @@ input CardInputDto {
   cardTitle: String!
   cardDescription: String!
   cardImage: Upload
+  boardId: String!
 }
 
 """The `Upload` scalar type represents a file upload."""
@@ -90,4 +92,5 @@ input CardUpdateInputDto {
   cardDescription: String
   cardImage: Upload
   status: StatusType
+  boardId: String!
 }

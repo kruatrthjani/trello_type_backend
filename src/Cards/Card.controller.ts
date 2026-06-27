@@ -1,4 +1,4 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { CardService } from './Card.service';
 import { Query } from '@nestjs/graphql';
 import { CardDto, CardInputDto, CardUpdateInputDto } from './dto/Card.dto';
@@ -21,10 +21,12 @@ export class CardController {
 
   @Query(() => CardDto)
   async getCard(
-    @Args('id') id: string
+    @Args('id') id: string,
+    @Context() context
   ) {
-    const data = await this.cardService.getCard(id)
-    return data
+    const userId = context.req.user?.sub;
+    const data = await this.cardService.getCard(id, userId);
+    return data;
   }
 
   @Roles('CLIENT', 'MANAGER')
@@ -32,13 +34,6 @@ export class CardController {
   async createCard(
     @Args('data', { type: () => CardInputDto }) data: CardInputDto,
   ) {
-    console.log('createCard resolver incoming args:', {
-      cardTitle: data.cardTitle,
-      cardDescription: data.cardDescription,
-      cardImagePresent: !!data.cardImage,
-      cardImageType: data.cardImage ? typeof data.cardImage : 'undefined',
-    });
-
     const response = await this.cardService.createCard(data);
     return response;
   }
@@ -47,24 +42,28 @@ export class CardController {
   @Mutation(() => CardDto)
   async updateCard(
     @Args('id') id: string,
-    @Args('data', { type: () => CardUpdateInputDto }) data: CardUpdateInputDto) {
-    const response = await this.cardService.updatecard(id, data)
+    @Args('data', { type: () => CardUpdateInputDto }) data: CardUpdateInputDto,@Context() context) {
+    const userId = context.req.user?.sub;
+    const response = await this.cardService.updatecard(id, data,userId)
     return response;
   }
 
-  @Roles('CLIENT', 'MANAGER')
+  
   @Mutation(() => CardDto)
   async updateCardStatus(
     @Args('id') id: string,
-    @Args('status', { type: () => StatusType }) status:StatusType ) {
-    const response = await this.cardService.updateCardStatus(id, status)
+    @Args('status', { type: () => StatusType }) status:StatusType,
+    @Context() context ) {
+    const userId = context.req.user?.sub;
+    const response = await this.cardService.updateCardStatus(id, userId,status)
     return response;
   }
 
   @Roles('CLIENT')
   @Query(() => CardDto)
-  async DeleteCard(@Args('id') id: string) {
-    const response = await this.cardService.deleteCard(id);
+  async DeleteCard(@Args('id') id: string,@Context() context) {
+    const userId=context.req.user?.sub;
+    const response = await this.cardService.deleteCard(id,userId);
     return response;
   }
 }
