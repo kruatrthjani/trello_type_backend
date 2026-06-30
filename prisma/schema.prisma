@@ -20,6 +20,7 @@ model User {
   boardMemberships BoardMember[]
   clientProjects   Projects[]    @relation("ClientProjects")
   managedProjects  Projects[]    @relation("ManagedProjects")
+  comments         Comment[]
 
   @@unique([provider, providerId])
 }
@@ -73,6 +74,22 @@ model Card {
   status          StatusType @default(PENDING)
   boardId         String
   board           Boards     @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
+  comments        Comment[]
+}
+
+model Comment {
+  commentId String @id @default(uuid())
+  comment   String
+
+  cardId String
+  card   Card   @relation(fields: [cardId], references: [cardId], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  replyTo String?
+  parent  Comment?  @relation("CommentReplies", fields: [replyTo], references: [commentId])
+  replies Comment[] @relation("CommentReplies")
 }
 
 enum roleType {
